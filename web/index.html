@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<script src="polyfill.min.js"></script>
+	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\inject.js"></script>
+	<link rel="stylesheet" href="bootstrap-dark.min.css">
+	<link rel="stylesheet" href="css.css">
+</head>
+
+<body class="overflow-hidden">
+	<!-- title bar -->
+	<header class="titlebar" onmousedown="gui.CaptionMove()">
+		<span class="title">Default</span>
+		<div class="buttons">
+			<button onclick="gui.minimize()">&#128469;</button><button onclick="gui.Close()">&#128473;</button>
+		</div>
+	</header>
+
+	<div id="buttons">
+		<button class="btn btn-primary" onclick="openVideoModal()">Add video</button>
+		<button class="btn btn-primary" onclick="ahk.openFolder()">Open Folder</button>
+		<button class="btn btn-primary" onclick="openSettingsModal()">Settings</button>
+		<!-- <button class="btn btn-primary">Settings</button> -->
+	</div>
+
+	<div class="container" id="videolist">
+	</div>
+
+	<div class="modal fade" id="videomodal" data-keyboard="false" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<p class="modal-title">Download video</p>
+				</div>
+				<div class="modal-body">
+					<form name="videoSelect">
+						<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<span class="input-group-text">https://</span>
+							</div>
+							<input type="text" class="form-control" name="video" oninput="checkUrl(this)">
+						</div>
+					</form>
+					<div class="progress" name="getData">
+						<div class="progress-bar progress-bar-striped progress-bar-animated" aria-valuenow="75" id="videoLoadProgress"></div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" onclick="chooseVideo()">Download</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="videochoosemodal" data-keyboard="false" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<p class="modal-title">video title</p>
+				</div>
+				<div class="modal-body">
+					<form name="videoDownload">
+						<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<label class="input-group-text">Quality</label>
+							</div>
+							<select class="custom-select" name="quality">
+								<option value="11">720p 64fps</option>
+								<option value="20">40p 64fps</option>
+								<option value="40">40p 10fps</option>
+							</select>
+						</div>
+						<div class="form-check">
+							<label class="form-check-label">
+								<input type="checkbox" class="form-check-input" name="showhidden" onchange="toggleHidden(this.checked)">
+								Hide repeated quality
+							</label>
+						</div>						<div class="form-check">
+							<label class="form-check-label">
+								<input type="checkbox" class="form-check-input" name="audio">
+								Download with audio
+							</label>
+						</div>
+						<small class="form-text text-muted">Will be downloaded to <span class="downto">C:/</span>.</small>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" onclick="downloadVideo()">Download</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="settingsModal" data-keyboard="false" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<p class="modal-title">Settings</p>
+				</div>
+				<div class="modal-body">
+					<form name="settingsForm">
+						<div class="form-group">
+							<label>Download folder:</label>
+							<input type="text" class="form-control" name="path">
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" onclick="settingsSave()">Save</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="logsModal" data-keyboard="false" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<p class="modal-title"></p>
+					<button type="button" class="close" data-dismiss="modal" onclick="setLogs()">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<textarea class="console"></textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- PLACEHOLDERS -->
+	<div id="placeholders">
+		<div class="card-horizontal video">
+			<div class="img-square-wrapper">
+				<img class="center-block" alt="BROKEY">
+			</div>
+			<div class="card-body bg-dark">
+				<h6 class="card-title"></h6>
+				<p class="card-text"></p>
+				<button class="btn btn-secondary btn-sm" onclick="videoAction(this, 'delet')">Remove</button>
+				<button class="btn btn-secondary btn-sm" onclick="videoAction(this, 'logs')">Logs</button>
+			</div>
+			<div class="card-progress">
+				<div class="progress">
+					<div class="progress-bar progress-bar-striped"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="jquery-3.5.1.min.js"></script>
+	<script src="bootstrap.min.js"></script>
+	<script src="js.js"></script>
+</body>
+</html>
