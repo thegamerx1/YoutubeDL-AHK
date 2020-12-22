@@ -3,6 +3,7 @@ function ready() {
 	videoModalChoose = $("#videochoosemodal")
 	settingsModal = $("#settingsModal")
 	logModal = $("#logsModal")
+	errModal = $("#errModal")
 	videolist = $("#videolist")
 
 	videoModal.on("shown.bs.modal", function () {
@@ -200,4 +201,10 @@ function isJson(str) {
 		return false;
 	}
 	return true;
+}
+
+function showErrorDialog(title, text) {
+	errModal.modal("show")
+	errModal.find(".modal-title")[0].innerHTML = title
+	errModal.find(".console")[0].innerHTML = text
 }

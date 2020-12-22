@@ -57,7 +57,8 @@ class MyGui {
 		try {
 			this.jsondata := JSON.load(jsonraw)
 		} catch {
-			MsgBox Video could not be parsed
+			this.gui.wnd.showErrorDialog("Error parsing video", jsonraw)
+			return
 		}
 		return jsonraw
 	}
