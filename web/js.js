@@ -13,10 +13,17 @@ function ready() {
 	})
 	logs = {}
 	logsActive = ""
+	$('form').submit(false);
 }
 
 function debug() {
 	currentVideo = { title: "helloworld", formats: [{ format: "heybro" }], thumbnail: "https://i.ytimg.com/vi/lakBQBoEVGM/maxresdefault.jpg", id: "asdasd" }
+	addVideo(0)
+	addVideo(0)
+	addVideo(0)
+	addVideo(0)
+	addVideo(0)
+	addVideo(0)
 	addVideo(0)
 }
 
@@ -33,6 +40,9 @@ function addVideo(qid) {
 	video.querySelector(".card-text").innerHTML = formatString
 	video.setAttribute("videoID", currentVideo.id)
 	video.setAttribute("videoname", currentVideo.title)
+	video.setAttribute("downloaded", false)
+	video.setAttribute("downpercent", 0)
+	logs[currentVideo.id] = ""
 	videolist.append(video)
 }
 
@@ -44,16 +54,15 @@ function checkUrl(e) {
 }
 
 function openVideoModal() {
-	if (ahk.checkConf()) return
 	setProgress("getData", 0)
 	videoModal.modal("show")
 }
 function openVideoDownloadModal(response) {
 	videoModalChoose.modal("show")
 	currentVideo = response
-	if (response || isDebug) {
+	if (response) {
 		videoModalChoose.find(".modal-title")[0].innerHTML = response.title
-		videoModalChoose.find(".downto")[0].innerHTML = JSON.parse(ahk.getConf()).path
+		videoModalChoose.find(".downto")[0].innerHTML = JSON.parse(ahk.getConf()).downpath
 		videoModalChoose.find("input[name=showhidden]")[0].checked = true
 		videoModalChoose.find("input[name=audio]")[0].checked = true
 
@@ -79,10 +88,7 @@ function openVideoDownloadModal(response) {
 
 function openSettingsModal() {
 	settingsModal.modal("show")
-	let config = JSON.parse(ahk.getConf())
-	for (let property in config) {
-		settingsModal.find("input[name=" + property + "]")[0].value = config[property]
-	}
+	setDataToForm(settingsModal, JSON.parse(ahk.getConf()))
 }
 
 function settingsSave() {
@@ -95,10 +101,14 @@ function chooseVideo() {
 	let data = formString(document.forms["videoSelect"])
 	let response = ahk.getVideoData("https://" + data.video)
 	videoModal.modal("hide")
-	if (!response) {
+	let parsed
+	try {
+		parsed = JSON.parse(response)
+	} catch (e) {
 		return
 	}
-	openVideoDownloadModal(JSON.parse(response))
+	gui.log(response)
+	openVideoDownloadModal(parsed)
 }
 
 function downloadVideo() {
@@ -113,16 +123,19 @@ function setProgress(name, value) {
 	progress.style.width = value + "%"
 }
 
-function updateProgress(id, percent, eta, speed, size) {
+function updateProgress(id, percent, speed, size) {
 	videolist.children().each(function() {
-		if (this.getAttribute("videoID") == id) {
+		if (this.getAttribute("videoID") == id && this.getAttribute("downloaded") == "false") {
 			let msg = size + " at " + speed
 			let progressbar = this.querySelector(".progress-bar")
-			if (percent == "100") {
+			if (percent == "101") {
+				this.setAttribute("downloaded", true)
 				msg = "Downloaded"
+				if (this.getAttribute("downpercent") !== "100") msg = "Error see logs"
 				progressbar.style.display = "none"
 			}
 
+			this.setAttribute("downpercent", percent)
 			progressbar.style.width = percent + "%"
 			this.querySelector(".card-text").innerHTML = msg
 			return
@@ -167,13 +180,24 @@ function setLogs() {
 }
 
 function log(id, text) {
-	if (typeof logs[id] == "undefined") {
-		logs[id] = ""
-	}
 	logs[id] += text
 	let textarea = logModal.find(".console")[0]
 	if (logsActive = id) {
 		textarea.innerHTML = logs[id]
 		textarea.scrollTop = textarea.scrollHeight
 	}
+}
+
+function setConfValue(e, value) {
+	if (value !== "")
+		e.parentElement.querySelector("input").value = value
+}
+
+function isJson(str) {
+	try {
+		JSON.parse(str);
+	} catch (e) {
+		return false;
+	}
+	return true;
 }
