@@ -4,9 +4,9 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<script src="polyfill.min.js"></script>
+	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\polyfill.min.js"></script>
 	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\inject.js"></script>
-	<link rel="stylesheet" href="bootstrap-dark.min.css">
+	<link rel="stylesheet" href="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\bootstrap-dark.min.css">
 	<link rel="stylesheet" href="css.css">
 </head>
 
@@ -23,7 +23,6 @@
 		<button class="btn btn-primary" onclick="openVideoModal()">Add video</button>
 		<button class="btn btn-primary" onclick="ahk.openFolder()">Open Folder</button>
 		<button class="btn btn-primary" onclick="openSettingsModal()">Settings</button>
-		<!-- <button class="btn btn-primary">Settings</button> -->
 	</div>
 
 	<div class="container" id="videolist">
@@ -104,15 +103,32 @@
 				</div>
 				<div class="modal-body">
 					<form name="settingsForm">
-						<div class="form-group">
-							<label>Download folder:</label>
-							<input type="text" class="form-control" name="path">
+						<label>Download folder:</label>
+						<div class="input-group">
+							<input type="text" class="form-control" readonly name="downpath">
+							<div class="input-group-append" onclick='setConfValue(this, ahk.chooseFolder("Download videos to:", true))'>
+								<button class="btn btn-secondary input-group-text">Browse</button>
+							</div>
+						</div>
+						<label>Youtube-DL:</label>
+						<div class="input-group">
+							<input type="text" class="form-control" readonly name="ytdlpath">
+							<div class="input-group-append" onclick='setConfValue(this, ahk.chooseFile("Youtube DL (*.exe)", true))'>
+								<button class="btn btn-secondary input-group-text">Browse</button>
+							</div>
+						</div>
+						<label>Ffmpeg:</label>
+						<div class="input-group">
+							<input type="text" class="form-control" readonly name="ffmpegpath">
+							<div class="input-group-append" onclick='setConfValue(this, ahk.chooseFile("Ffmpeg (*.exe)", true))'>
+								<button class="btn btn-secondary input-group-text">Browse</button>
+							</div>
 						</div>
 					</form>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary" onclick="settingsSave()">Save</button>
+					<button class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button class="btn btn-primary" onclick="settingsSave()">Save</button>
 				</div>
 			</div>
 		</div>
@@ -154,8 +170,8 @@
 		</div>
 	</div>
 
-	<script src="jquery-3.5.1.min.js"></script>
-	<script src="bootstrap.min.js"></script>
+	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\jquery-3.5.1.min.js"></script>
+	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\bootstrap.min.js"></script>
 	<script src="js.js"></script>
 </body>
 </html>
