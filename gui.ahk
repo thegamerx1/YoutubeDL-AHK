@@ -98,7 +98,7 @@ class MyGui {
 	}
 
 	downloadVideo(qid, audio) {
-		command := this.ytdlopts "-o " configFile.data.downpath "\%(title)s.%(ext)s -f " qid (audio ? "+bestaudio " : " ") this.jsondata.webpage_url
+		command := this.ytdlopts "-o """ configFile.data.downpath "\%(title)s.%(ext)s"" -f " qid (audio ? "+bestaudio " : " ") this.jsondata.webpage_url
 		debug.print("Downloading video: " this.jsondata.title " - " qid " " audio)
 		RunCMD(command, objbindmethod(this, "refresh", this.jsondata.id))
 	}
