@@ -20,7 +20,7 @@ class MyGui {
 
 	reloadYTDL() {
 		this.ytdlopts := configFile.data.ytdlpath " --ffmpeg-location """ configFile.data.ffmpegpath """ --config-location """ A_ScriptDir "/youtube-dl.conf"" "
-		msgbox % this.ytdlopts
+		Debug.print(this.ytdlopts)
 	}
 
 	checkConf() {
@@ -57,8 +57,8 @@ class MyGui {
 		this.gui.wnd.setProgress("getData", 100)
 		try {
 			this.jsondata := JSON.load(jsonraw)
-		} catch e {
-			return false
+		} catch {
+			MsgBox Video could not be parsed
 		}
 		return jsonraw
 	}
@@ -87,13 +87,15 @@ class MyGui {
 
 
 	refresh(id, out, finished) {
-		if RegExMatch(out, "O)\[download\]\s+(?<percent>[\d\.]+)%\s+of\s+(?<size>[\d\.\w]+)\sat\s+(?<speed>[\d\.\w]+\/s)\sETA\s(?<ETA>[\d:]+)", match) {
-			this.gui.wnd.updateProgress(id, match.percent, match.eta, match.speed, match.size)
-		}
-		if (finished) {
-			this.gui.wnd.updateProgress(id, "101")
+		if RegExMatch(out, "O)\[download\]\s+(?<percent>\d+)(\.\d+)?%\s+of\s+(?<size>[\d\.\w]+)(\sat\s+(?<speed>[\d\.\w]+\/s)\sETA\s(?<ETA>[\d:]+))?", match) {
+			this.gui.wnd.updateProgress(id, match.percent, match.speed, match.size)
+			; debug.print(id " - " match.percent "% - " match.eta " - " match.speed " - " match.size)
 		}
 		this.gui.wnd.log(id, out)
+		if (finished) {
+			this.gui.wnd.updateProgress(id, "101")
+			this.gui.wnd.log(id, "[END]")
+		}
 	}
 
 	downloadVideo(qid, audio) {
