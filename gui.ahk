@@ -3,7 +3,6 @@ class MyGui {
 		this.gui := new EzGui(this, {w: 500
 			,h: 600
 			,title: "Youtube Downloader"
-			,options: "-MinimizeBox -MaximizeBox"
 			,caption: false
 			,fixsize: true
 			,browser: true
