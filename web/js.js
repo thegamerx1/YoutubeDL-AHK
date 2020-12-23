@@ -14,36 +14,66 @@ function ready() {
 	})
 	logs = {}
 	logsActive = ""
-	$('form').submit(false);
+	$('form').submit(false)
 }
 
 function debug() {
-	currentVideo = { title: "helloworld", formats: [{ format: "heybro" }], thumbnail: "https://i.ytimg.com/vi/lakBQBoEVGM/maxresdefault.jpg", id: "asdasd" }
+	currentVideo = { title: "¿Cómo convertí el PEOR AÑO de la historia en mi año MÁS PRODUCTIVO?", formats: [{ format_id: 0, format: "202 - 720p60" }], thumbnail: "https:\/\/i.ytimg.com/", id: "asdasd" }
 	addVideo(0)
-	addVideo(0)
-	addVideo(0)
-	addVideo(0)
-	addVideo(0)
-	addVideo(0)
-	addVideo(0)
+	debugg = {}
+	debugg.downpercent = 0
+	debugg.downloops = 0
+	debugg.nextpercent = false
+	debugg.sentOnce = true
+	debugg.firstRun = true
+	debuggy()
+}
+
+// ? Simulate download in browser for developing epic progressbar yes
+function debuggy() {
+	if (debugg.firstRun) {
+		debugg.firstRun = false
+		updateProgress("asdasd", "sasdasadsadasdasdsasdasadsadasdasdsasdasadsadasdasdsasdasadsadasdasdsasdasadsadasdasdsasdasadsadasdasdsasdasadsadasdasd")
+	}
+	debugg.downpercent += random(5, 10)
+	if (debugg.downpercent > 100) {
+		debugg.downpercent = 100
+	}
+	if (debugg.nextpercent) {
+		debugg.percent = 0
+		debugg.nextpercent = false
+	}
+	if (random(1, 20) == 5 && debugg.downloops >= 1) {
+		debugg.downpercent = 101
+	}
+	updateProgress("asdasd", debugg.downpercent, random(1, 50) + "MB/s", "123MiB", random(10, 59) + ":" + random(10, 59))
+	console.log(debugg.downpercent)
+	if (debugg.downpercent == 101) return
+	if (debugg.downpercent == 100) {
+		debugg.nextpercent = true
+		debugg.downloops++
+		debugg.downpercent = 0
+	}
+	setTimeout(debuggy, random(10, 100))
 }
 
 function addVideo(qid) {
 	let video = $("#placeholders .video").clone(true)[0]
 	video.querySelector("img").src = currentVideo.thumbnail
-	video.querySelector(".card-title").innerHTML = currentVideo.title
-	let formatString
-	currentVideo.formats.forEach(function(format) {
+	video.querySelector(".video-title").innerHTML = currentVideo.title
+	var formatString
+	currentVideo.formats.forEach(function (format) {
 		if (format.format_id == qid) {
 			formatString = format.format
 		}
 	})
-	video.querySelector(".card-text").innerHTML = formatString
+	video.querySelector(".video-format").innerHTML = formatString
 	video.setAttribute("videoID", currentVideo.id)
 	video.setAttribute("videoname", currentVideo.title)
-	video.setAttribute("downloaded", false)
+	video.setAttribute("downloadedonce", false)
+	video.setAttribute("done", false)
 	video.setAttribute("downpercent", 0)
-	logs[currentVideo.id] = ""
+	logs[currentVideo.id] = "[URL] "+ currentVideo.webpage_url
 	videolist.append(video)
 }
 
@@ -55,8 +85,10 @@ function checkUrl(e) {
 }
 
 function openVideoModal() {
-	setProgress("getData", 0)
 	videoModal.modal("show")
+	setProgress("getData", 0)
+	videoModal.find("input[name=video]").value = ""
+	videoModal.find("button").prop("disabled", 0)
 }
 function openVideoDownloadModal(response) {
 	videoModalChoose.modal("show")
@@ -66,6 +98,7 @@ function openVideoDownloadModal(response) {
 		videoModalChoose.find(".downto")[0].innerHTML = JSON.parse(ahk.getConf()).downpath
 		videoModalChoose.find("input[name=showhidden]")[0].checked = true
 		videoModalChoose.find("input[name=audio]")[0].checked = true
+		videoModalChoose.find("input[name=subtitles]")[0].checked = false
 
 		let quality = videoModalChoose.find("select[name=quality]")[0]
 		quality.innerHTML = ""
@@ -99,6 +132,7 @@ function settingsSave() {
 }
 
 function chooseVideo() {
+	videoModal.find("button").prop("disabled", true)
 	let data = formString(document.forms["videoSelect"])
 	let response = ahk.getVideoData("https://" + data.video)
 	videoModal.modal("hide")
@@ -108,15 +142,16 @@ function chooseVideo() {
 	} catch (e) {
 		return
 	}
-	gui.log(response)
 	openVideoDownloadModal(parsed)
 }
 
 function downloadVideo() {
 	videoModalChoose.modal("hide")
 	let data = formString(document.forms["videoDownload"])
+	setTimeout(function() {
+		ahk.downloadVideo(JSON.stringify(data))
+	}, 0);
 	addVideo(data.quality)
-	setTimeout(function() {ahk.downloadVideo(data.quality, data.audio)}, 100)
 }
 
 function setProgress(name, value) {
@@ -124,21 +159,60 @@ function setProgress(name, value) {
 	progress.style.width = value + "%"
 }
 
-function updateProgress(id, percent, speed, size) {
-	videolist.children().each(function() {
-		if (this.getAttribute("videoID") == id && this.getAttribute("downloaded") == "false") {
-			let msg = size + " at " + speed
+function updateProgress(id, percent, speed, size, eta) {
+	videolist.find(".video[videoID="+ id +"][done=false]").each(function() {
+		if (this.getAttribute("videoID") == id && this.getAttribute("done") == "false") {
+			if (isNaN(percent)) {
+				logs[id] += "\n[COMMAND] "+ percent +"\n"
+				return
+			}
+			let finished = false
+			let msgprogress = percent +"% "+ speed
+			let msg = "Downloading"
 			let progressbar = this.querySelector(".progress-bar")
-			if (percent == "101") {
-				this.setAttribute("downloaded", true)
-				msg = "Downloaded"
-				if (this.getAttribute("downpercent") !== "100") msg = "Error see logs"
-				progressbar.style.display = "none"
+
+			if (progressbar.classList.contains("notransition")) progressbar.classList.remove("notransition")
+
+			if (this.getAttribute("downloadedonce") == "true") {
+				msg = "Downloading audio"
 			}
 
-			this.setAttribute("downpercent", percent)
+			if (percent == "100") {
+				this.setAttribute("downloadedonce", true)
+				// msgprogress = speed
+			}
+
+
+			if (percent == "101") {
+				this.setAttribute("done", true)
+				if (this.getAttribute("downloadedonce") == "false"
+				||	this.getAttribute("downpercent") !== "100"
+				) {
+					finished = true
+					msg = "Error see logs"
+					msgprogress = "Error"
+					progressbar.classList.add("error")
+					percent = 100
+				} else {
+					msg = "Downloaded"
+					msgprogress = "100%"
+					finished = true
+				}
+			}
+
+
+			percent = (percent > 100 ? 100 : percent)
 			progressbar.style.width = percent + "%"
-			this.querySelector(".card-text").innerHTML = msg
+			this.querySelector(".text-info").innerHTML = msg
+			this.querySelector(".text-progress").innerHTML = msgprogress
+			if (!finished) {
+				if (this.getAttribute("downpercent") > percent) {
+					progressbar.classList.add("notransition")
+					progressbar.style.width = "0%"
+				}
+				this.setAttribute("downpercent", percent)
+				this.querySelector(".video-size").innerHTML = size
+			}
 			return
 		}
 	})
@@ -172,7 +246,7 @@ function videoAction(e, action) {
 			logModal.modal("show")
 			logsActive = videoID
 			logModal.find(".modal-title")[0].innerHTML = e.getAttribute("videoname")
-			logModal.find(".console")[0].innerHTML = logs[videoID]
+			logModal.find(".console code")[0].innerHTML = logs[videoID]
 	}
 }
 
@@ -182,7 +256,7 @@ function setLogs() {
 
 function log(id, text) {
 	logs[id] += text
-	let textarea = logModal.find(".console")[0]
+	let textarea = logModal.find(".console code")[0]
 	if (logsActive = id) {
 		textarea.innerHTML = logs[id]
 		textarea.scrollTop = textarea.scrollHeight
@@ -206,5 +280,5 @@ function isJson(str) {
 function showErrorDialog(title, text) {
 	errModal.modal("show")
 	errModal.find(".modal-title")[0].innerHTML = title
-	errModal.find(".console")[0].innerHTML = text
+	errModal.find(".console code")[0].innerHTML = text
 }

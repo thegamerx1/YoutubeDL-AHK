@@ -40,11 +40,11 @@
 							<div class="input-group-prepend">
 								<span class="input-group-text">https://</span>
 							</div>
-							<input type="text" class="form-control" name="video" oninput="checkUrl(this)">
+							<input type="text" class="form-control" name="video" placeholder="youtube.com/watch?v=" oninput="checkUrl(this)">
 						</div>
 					</form>
 					<div class="progress" name="getData">
-						<div class="progress-bar progress-bar-striped progress-bar-animated" aria-valuenow="75" id="videoLoadProgress"></div>
+						<div class="progress-bar progress-bar-striped progress-bar-animated" id="videoLoadProgress"></div>
 					</div>
 				</div>
 				<div class="modal-footer">
@@ -78,10 +78,17 @@
 								<input type="checkbox" class="form-check-input" name="showhidden" onchange="toggleHidden(this.checked)">
 								Hide repeated quality
 							</label>
-						</div>						<div class="form-check">
+						</div>
+						<div class="form-check">
 							<label class="form-check-label">
 								<input type="checkbox" class="form-check-input" name="audio">
 								Download with audio
+							</label>
+						</div>
+						<div class="form-check">
+							<label class="form-check-label">
+								<input type="checkbox" class="form-check-input" name="subtitles">
+								Download subtitles
 							</label>
 						</div>
 						<small class="form-text text-muted">Will be downloaded to <span class="downto">C:/</span>.</small>
@@ -144,7 +151,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<textarea class="console"></textarea>
+					<pre class="console"><code></code></pre>
 				</div>
 			</div>
 		</div>
@@ -160,7 +167,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<textarea class="console"></textarea>
+					<pre class="console"><code></code></pre>
 				</div>
 			</div>
 		</div>
@@ -168,22 +175,27 @@
 
 	<!-- PLACEHOLDERS -->
 	<div id="placeholders">
-		<div class="card-horizontal video">
-			<div class="img-square-wrapper">
-				<img class="center-block" alt="BROKEY">
+		<div class="video bg-dark">
+			<div class="video-body">
+				<div class="video-image">
+					<img onerror="this.onerror=null; this.src='https:\/\/i.ytimg.com/'" alt="BROKEY">
+				</div>
+				<div class="video-content">
+					<p class="video-title"></p>
+					<p class="text-muted"><span class="video-format">480p</span> <span class="video-size">0MB</span></p>
+					<span class="spacer"></span>
+					<p class="text-info">Waiting for download</p>
+				</div>
 			</div>
-			<div class="card-body bg-dark">
-				<p class="card-title"></p>
-				<p class="card-text"></p>
+			<div class="video-footer">
 				<div class="buttons">
-					<button class="btn btn-info btn-sm" onclick="videoAction(this, 'logs')">Logs</button>
-					<button class="btn btn-danger btn-sm" onclick="videoAction(this, 'delet')">Remove</button>
+					<div class="btn-group">
+						<button class="btn btn-sm" onclick="videoAction(this, 'logs')">Logs</button>
+						<button class="btn btn-sm" onclick="videoAction(this, 'delet')">Remove</button>
+					</div>
 				</div>
-			</div>
-			<div class="card-progress">
-				<div class="progress">
-					<div class="progress-bar progress-bar-striped"></div>
-				</div>
+				<div class="progress-bar overall"></div>
+				<div class="overall text-progress"></div>
 			</div>
 		</div>
 	</div>
