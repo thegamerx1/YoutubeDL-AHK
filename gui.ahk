@@ -1,9 +1,10 @@
 class MyGui {
 	init() {
-		this.gui := new EzGui(this, {w: 500
-			,h: 600
+		this.gui := new EzGui(this, {w: 520
+			,h: 720
 			,title: "Youtube Downloader"
 			,caption: false
+			; ,resize: true
 			,fixsize: true
 			,browser: true
 			,browserhtml: "web/index.html"})
@@ -12,7 +13,6 @@ class MyGui {
 		this.gui.visible := true
 		configFile.data := EzConf(configFile.data, {})
 		this.reloadYTDL()
-		this.videoarray := []
 		this.checkConf()
 		OnExit(ObjBindMethod(this, "close"))
 	}
@@ -32,7 +32,6 @@ class MyGui {
 		if !FileExist(configFile.data.ffmpegpath) {
 			configFile.data.ffmpegpath := this.chooseFile("Ffmpeg (*.exe)")
 		}
-		configFile.save()
 	}
 
 	chooseFolder(text, bypass := false) {
@@ -55,7 +54,7 @@ class MyGui {
 		jsonraw := RunCMD(command)
 		this.gui.wnd.setProgress("getData", 100)
 		try {
-			this.jsondata := JSON.load(jsonraw)
+			this.lastjson := JSON.load(jsonraw)
 		} catch {
 			this.gui.wnd.showErrorDialog("Error parsing video", jsonraw)
 			return
@@ -88,8 +87,7 @@ class MyGui {
 
 	refresh(id, out, finished) {
 		if RegExMatch(out, "O)\[download\]\s+(?<percent>\d+)(\.\d+)?%\s+of\s+(?<size>[\d\.\w]+)(\sat\s+(?<speed>[\d\.\w]+\/s)\sETA\s(?<ETA>[\d:]+))?", match) {
-			this.gui.wnd.updateProgress(id, match.percent, match.speed, match.size)
-			; debug.print(id " - " match.percent "% - " match.eta " - " match.speed " - " match.size)
+			this.gui.wnd.updateProgress(id, match.percent, match.speed, match.size, match.eta)
 		}
 		this.gui.wnd.log(id, out)
 		if (finished) {
@@ -98,9 +96,15 @@ class MyGui {
 		}
 	}
 
-	downloadVideo(qid, audio) {
-		command := this.ytdlopts "-o """ configFile.data.downpath "\%(title)s.%(ext)s"" -f " qid (audio ? "+bestaudio " : " ") this.jsondata.webpage_url
-		debug.print("Downloading video: " this.jsondata.title " - " qid " " audio)
-		RunCMD(command, objbindmethod(this, "refresh", this.jsondata.id))
+	downloadVideo(data) {
+		data := json.load(data)
+		command := this.ytdlopts "-o """ configFile.data.downpath "\%(title)s.%(ext)s"" -f " data.quality
+		if data.audio
+			command .= "+bestaudio"
+		if data.subtitles
+			command .= " --embed-subs --all-subs"
+		command .= " " this.lastjson.webpage_url
+		this.gui.wnd.updateProgress(this.lastjson.id, command)
+		error := RunCMD(command, objbindmethod(this, "refresh", this.lastjson.id))
 	}
 }

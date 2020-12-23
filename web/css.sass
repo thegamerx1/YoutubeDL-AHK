@@ -1,10 +1,6 @@
 body
 	border: 1px solid #3c3f45
 
-.card-horizontal
-    display: flex
-    flex: 1 1 auto
-
 #buttons
 	display: flex
 	justify-content: space-between
@@ -28,52 +24,77 @@ body
 	border-radius: 2px
 	border: 1px solid #857A84
 	position: relative
-	padding-bottom: 10px
 	margin-bottom: 15px
-	.card-body
-		padding: 10px 15px
-		.buttons
-			display: flex
-			justify-content: space-between
-	.card-title
-		font-weight: bold
-		margin-bottom: .3rem
-	.card-progress
-		position: absolute
-		bottom: 0
-		left: 0
-		right: 0
-		.progress
-			height: 10px
-			background: rgba(0, 0, 0, 0.3)
-			border-radius: 0
-			.progess-bar
-				width: 10%
-	.img-square-wrapper
-		overflow: hidden
-		background: #535353
+	.video-body
 		display: flex
-		justify-content: center
-		align-items: center
-		img
-			max-height: 90px
-			object-fit: contain
+		flex-direction: row
+		.video-image
+			flex: 1
+			flex-grow: 2
+			display: flex
+			max-height: 100%
+			max-width: 30%
+			min-width: 25%
+			img
+				object-fit: cover
+				width: 100%
 
-
-.console
-	background: transparent
-	padding: 6px
-	color: #32cd32
-	font-size: small
-	font-family: "Monospace", "Consolas"
-	border: 0
-	overflow: auto
-	word-wrap: normal
-	resize: none
+		.video-content
+			padding: .5em
+			flex: 1
+			flex-grow: 3
+			p,span
+				margin: 0
+			display: flex
+			flex-direction: column
+			.video-title
+				text-overflow: ellipsis
+				overflow: hidden
+				font-weight: bold
+				max-height: 2.2em
+				line-height: 1.1em
+			.spacer
+				flex-grow: 1
+	.video-footer
+		border-top: 1px solid rgba(163, 163, 163, 0.255)
+		position: relative
+		.buttons
+			position: relative
+			display: flex
+			justify-content: flex-end
+			z-index: 5
+			button
+				padding: .3em .5em
+				background: transparent
+				transition: all .2s ease-in-out
+				&:hover
+					background: rgba(0, 0, 150, .5)
+					&:last-of-type
+						background: rgba(150, 0, 0, .5)
+		.overall
+			display: flex
+			justify-content: center
+			position: absolute
+			right: 0
+			left: 0
+			top: 0
+			bottom: 0
+		.progress-bar
+			box-shadow: inset 0px 0px 5px 2px rgba(0,0,0,0.3)
+			background-image: linear-gradient(to right, #bcf538, #13d32d)
+			opacity: .5
+			width: 0%
+			transition: .3s width
+		.error
+			background-image: none
+			background: #c23838
 
 .console-modal
 	.modal-body
 		display: flex
 		height: 70vh
-		textarea
+		pre,textarea
 			flex: 1
+
+.notransition
+	transition: none !important
