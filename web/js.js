@@ -18,7 +18,7 @@ function ready() {
 }
 
 function debug() {
-	currentVideo = { title: "¿Cómo convertí el PEOR AÑO de la historia en mi año MÁS PRODUCTIVO?", formats: [{ format_id: 0, format: "202 - 720p60" }], thumbnail: "https:\/\/i.ytimg.com/", id: "asdasd" }
+	currentVideo = { title: "LOREM LOREM LOREM LOREM LOREM LOREM LOREM", formats: [{ format_id: 0, format: "202 - 720p60" }], thumbnails: [{ url: "https://i.ytimg.com/" }, { url: "https://i.ytimg.com/vi/AqyDMGR7XsU/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLD6iknbQNwSjpIPOCscpbqypbUE7g"}], id: "asdasd"}
 	addVideo(0)
 	debugg = {}
 	debugg.downpercent = 0
@@ -59,7 +59,14 @@ function debuggy() {
 
 function addVideo(qid) {
 	let video = $("#placeholders .video").clone(true)[0]
-	video.querySelector("img").src = currentVideo.thumbnail
+	var thumbnail
+	currentVideo.thumbnails.forEach(function (thumb) {
+		if (!thumb.url.includes(".webp")) {
+			thumbnail = thumb.url
+		}
+	})
+
+	video.querySelector("img").src = thumbnail
 	video.querySelector(".video-title").innerHTML = currentVideo.title
 	var formatString
 	currentVideo.formats.forEach(function (format) {
@@ -87,7 +94,7 @@ function checkUrl(e) {
 function openVideoModal() {
 	videoModal.modal("show")
 	setProgress("getData", 0)
-	videoModal.find("input[name=video]").value = ""
+	videoModal.find("input[name=video]")[0].value = ""
 	videoModal.find("button").prop("disabled", 0)
 }
 function openVideoDownloadModal(response) {
@@ -211,7 +218,9 @@ function updateProgress(id, percent, speed, size, eta) {
 					progressbar.style.width = "0%"
 				}
 				this.setAttribute("downpercent", percent)
-				this.querySelector(".video-size").innerHTML = size
+				if (!this.querySelector(".video-size").innerHTML) {
+					this.querySelector(".video-size").innerHTML = size
+				}
 			}
 			return
 		}
