@@ -59,6 +59,8 @@ class MyGui {
 			this.gui.wnd.showErrorDialog("Error parsing video", jsonraw)
 			return
 		}
+		if !A_IsCompiled
+			clipboard := jsonraw
 		return jsonraw
 	}
 
@@ -76,7 +78,7 @@ class MyGui {
 	}
 
 	close(Reason := "") {
-		if (Reason != "Shutdown") {
+		if !ifIn(Reason, "Shutdown,Single") {
 			MsgBox, 4, Exit, Are you sure you want to exit?
 			IfMsgBox No
 				return 1
