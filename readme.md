@@ -1,5 +1,7 @@
 [youtube-dl](https://github.com/ytdl-org/youtube-dl) gui with ahk
 
+DOWNLOAD COMPILED AT: https://github.com/thegamerx1/YoutubeDL-AHK/releases/
+
 ## KNOWN ISSUES
 * Enter key doesnt submit forms
 
