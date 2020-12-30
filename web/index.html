@@ -1,61 +1,64 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 	<meta charset="UTF-8">
+	<title>Youtube Downloader</title>
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\polyfill.min.js"></script>
-	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\inject.js"></script>
-	<link rel="stylesheet" href="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\bootstrap-dark.min.css">
-	<link rel="stylesheet" href="css.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
-<body class="overflow-hidden">
-	<!-- title bar -->
-	<header class="titlebar" onmousedown="gui.CaptionMove()">
-		<span class="title">Default</span>
-		<div class="buttons">
-			<button onclick="gui.minimize()">&#128469;</button><button onclick="gui.Close()">&#128473;</button>
-		</div>
-	</header>
+<body>
+	<ahk-nav close minimize></ahk-nav>
+	<div id="loader"></div>
+	<div class="progress nav-progress" name="nav"><div class="progress-bar"></div></div>
 
 	<div id="buttons">
-		<button class="btn btn-primary" onclick="openVideoModal()">Add video</button>
 		<button class="btn btn-primary" onclick="ahk.openFolder()">Open Folder</button>
 		<button class="btn btn-primary" onclick="openSettingsModal()">Settings</button>
 	</div>
 
-	<div class="container" id="videolist">
-	</div>
-
-	<div class="modal fade" id="videomodal" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<p class="modal-title">Download video</p>
-				</div>
-				<div class="modal-body">
-					<form name="videoSelect">
-						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">https://</span>
-							</div>
-							<input type="text" class="form-control" name="video" placeholder="youtube.com/watch?v=" oninput="checkUrl(this)">
-						</div>
-					</form>
-					<div class="progress" name="getData">
-						<div class="progress-bar progress-bar-striped progress-bar-animated" id="videoLoadProgress"></div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary" onclick="chooseVideo()">Download</button>
-				</div>
+	<form onsubmit="getDataButton()" id="videoUrl">
+		<div class="input-group px-3">
+			<div class="input-group-prepend">
+				<span class="input-group-text">https://</span>
+			</div>
+			<input type="text" class="form-control" name="video" placeholder="youtube.com/watch?v=" oninput="formatURL(this)">
+			<div class="input-group-append">
+				<button class="btn btn-secondary">Download</button>
 			</div>
 		</div>
-	</div>
+	</form>
 
-	<div class="modal fade" id="videochoosemodal" data-keyboard="false" data-backdrop="static">
+	<div class="container" id="videolist"></div>
+
+	<template name="video">
+		<div class="video bg-dark">
+			<div class="video-body">
+				<div class="video-image">
+					<img>
+				</div>
+				<div class="video-content">
+					<p class="video-title"></p>
+					<p class="text-muted"><span class="video-format"></span> <span class="video-size"></span></p>
+					<span class="spacer"></span>
+					<p class="text-info">Waiting for download</p>
+				</div>
+			</div>
+			<div class="video-footer">
+				<div class="buttons">
+					<div class="btn-group">
+						<button class="btn btn-sm" onclick="videoAction(this, 'logs')">Logs</button>
+						<button class="btn btn-sm" onclick="videoAction(this, 'delet')">Remove</button>
+					</div>
+				</div>
+				<div class="progress-bar overall"></div>
+				<div class="overall text-progress"></div>
+			</div>
+		</div>
+	</template>
+
+	<!-- MODALS -->
+	<div class="modal fade" id="videoqualitymodal" data-keyboard="false" data-backdrop="static">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -69,7 +72,7 @@
 							</div>
 							<select class="custom-select" name="quality">
 								<option value="11">720p 64fps</option>
-								<option value="20">40p 64fps</option>
+								<option value="20" class="repeated">40p 64fps</option>
 								<option value="40">40p 10fps</option>
 							</select>
 						</div>
@@ -113,21 +116,24 @@
 						<label>Download folder:</label>
 						<div class="input-group">
 							<input type="text" class="form-control" readonly name="downpath">
-							<div class="input-group-append" onclick='setConfValue(this, ahk.chooseFolder("Download videos to:", true))'>
+							<div class="input-group-append"
+								onclick='setConfValue(this, ahk.chooseFolder("Download videos to:", true))'>
 								<button class="btn btn-secondary input-group-text">Browse</button>
 							</div>
 						</div>
 						<label>Youtube-DL:</label>
 						<div class="input-group">
 							<input type="text" class="form-control" readonly name="ytdlpath">
-							<div class="input-group-append" onclick='setConfValue(this, ahk.chooseFile("Youtube DL (*.exe)", true))'>
+							<div class="input-group-append"
+								onclick='setConfValue(this, ahk.chooseFile("Youtube DL (*.exe)", true))'>
 								<button class="btn btn-secondary input-group-text">Browse</button>
 							</div>
 						</div>
 						<label>Ffmpeg:</label>
 						<div class="input-group">
 							<input type="text" class="form-control" readonly name="ffmpegpath">
-							<div class="input-group-append" onclick='setConfValue(this, ahk.chooseFile("Ffmpeg (*.exe)", true))'>
+							<div class="input-group-append"
+								onclick='setConfValue(this, ahk.chooseFile("Ffmpeg (*.exe)", true))'>
 								<button class="btn btn-secondary input-group-text">Browse</button>
 							</div>
 						</div>
@@ -141,7 +147,7 @@
 		</div>
 	</div>
 
-	<div class="modal fade console-modal" id="logsModal" data-keyboard="false" data-backdrop="static">
+	<div class="modal fade console-modal" id="consoleModal" data-keyboard="false" data-backdrop="static">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -157,7 +163,7 @@
 		</div>
 	</div>
 
-	<div class="modal fade console-modal" id="errModal" data-keyboard="false" data-backdrop="static">
+	<div class="modal fade console-modal" id="errorModal" data-keyboard="false" data-backdrop="static">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -173,35 +179,9 @@
 		</div>
 	</div>
 
-	<!-- PLACEHOLDERS -->
-	<div id="placeholders">
-		<div class="video bg-dark">
-			<div class="video-body">
-				<div class="video-image">
-					<img src="https://i.ytimg.com/">
-				</div>
-				<div class="video-content">
-					<p class="video-title"></p>
-					<p class="text-muted"><span class="video-format"></span> <span class="video-size">0MB</span></p>
-					<span class="spacer"></span>
-					<p class="text-info">Waiting for download</p>
-				</div>
-			</div>
-			<div class="video-footer">
-				<div class="buttons">
-					<div class="btn-group">
-						<button class="btn btn-sm" onclick="videoAction(this, 'logs')">Logs</button>
-						<button class="btn btn-sm" onclick="videoAction(this, 'delet')">Remove</button>
-					</div>
-				</div>
-				<div class="progress-bar overall"></div>
-				<div class="overall text-progress"></div>
-			</div>
-		</div>
-	</div>
-
-	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\jquery-3.5.1.min.js"></script>
-	<script src="file://C:\Users\TheGamerX05\Documents\Autohotkey\Lib\EzGui\bootstrap.min.js"></script>
+	<script src="file://C:/Users/TheGamerX05/Documents/Autohotkey/Lib/EzGui/libs/jquery-3.5.1.min.js"></script>
+	<script src="file://C:/Users/TheGamerX05/Documents/Autohotkey/Lib/EzGui/inject.js"></script>
 	<script src="js.js"></script>
+	<link rel="stylesheet" href="minify/css.css">
 </body>
 </html>
