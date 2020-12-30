@@ -1,25 +1,23 @@
 class MyGui {
 	init() {
-		this.gui := new EzGui(this, {w: 520
+		this.gui := new EzGui(this, {w: 500
 			,h: 720
 			,title: "Youtube Downloader"
 			,caption: false
-			; ,resize: true
 			,fixsize: true
 			,browser: true
-			,browserhtml: "web/index.html"})
+			,browserhtml: "web/"})
 
 		this.gui.inithooks()
 		this.gui.visible := true
 		configFile.data := EzConf(configFile.data, {})
 		this.reloadYTDL()
 		this.checkConf()
-		OnExit(ObjBindMethod(this, "close"))
+		OnExit(ObjBindMethod(this, "saveData"))
 	}
 
 	reloadYTDL() {
 		this.ytdlopts := configFile.data.ytdlpath " --ffmpeg-location """ configFile.data.ffmpegpath """ --config-location """ A_ScriptDir "/youtube-dl.conf"" "
-		Debug.print(this.ytdlopts)
 	}
 
 	checkConf() {
@@ -49,18 +47,10 @@ class MyGui {
 	}
 
 	getVideoData(url) {
-		this.gui.wnd.setProgress("getData", 95)
+		this.gui.wnd.setProgress("nav", 95)
 		command := this.ytdlopts "-J " url
 		jsonraw := RunCMD(command)
-		this.gui.wnd.setProgress("getData", 100)
-		try {
-			this.lastjson := JSON.load(jsonraw)
-		} catch {
-			this.gui.wnd.showErrorDialog("Error parsing video", jsonraw)
-			return
-		}
-		if !A_IsCompiled
-			clipboard := jsonraw
+		this.gui.wnd.setProgress("nav", 100)
 		return jsonraw
 	}
 
@@ -77,36 +67,42 @@ class MyGui {
 		Run % configFile.data.downpath
 	}
 
+	saveData() {
+		configFile.save()
+	}
+
 	close(Reason := "") {
 		if !ifIn(Reason, "Shutdown,Single") {
 			MsgBox, 4, Exit, Are you sure you want to exit?
 			IfMsgBox No
 				return 1
 		}
-		configFile.save()
+
+		ExitApp 0
 	}
 
 
-	refresh(id, out, finished) {
+	refresh(url, out, finished) {
+		local
 		if RegExMatch(out, "O)\[download\]\s+(?<percent>\d+)(\.\d+)?%\s+of\s+(?<size>[\d\.\w]+)(\sat\s+(?<speed>[\d\.\w]+\/s)\sETA\s(?<ETA>[\d:]+))?", match) {
-			this.gui.wnd.updateProgress(id, match.percent, match.speed, match.size, match.eta)
+			this.gui.wnd.updateProgress(url, match.percent, match.speed, match.size, match.eta)
 		}
-		this.gui.wnd.log(id, out)
+		this.gui.wnd.log(url, out)
 		if (finished) {
-			this.gui.wnd.updateProgress(id, "101")
-			this.gui.wnd.log(id, "[END]")
+			this.gui.wnd.updateProgress(url, "101")
+			this.gui.wnd.log(url, "[END]")
 		}
 	}
 
-	downloadVideo(data) {
+	downloadVideo(data, url) {
 		data := json.load(data)
 		command := this.ytdlopts "-o """ configFile.data.downpath "\%(title)s.%(ext)s"" -f " data.quality
 		if data.audio
 			command .= "+bestaudio"
 		if data.subtitles
 			command .= " --embed-subs --all-subs"
-		command .= " " this.lastjson.webpage_url
-		this.gui.wnd.updateProgress(this.lastjson.id, command)
-		error := RunCMD(command, objbindmethod(this, "refresh", this.lastjson.id))
+		command .= " " url
+		this.gui.wnd.updateProgress(url, command)
+		RunCMD(command, objbindmethod(this, "refresh", url))
 	}
 }
