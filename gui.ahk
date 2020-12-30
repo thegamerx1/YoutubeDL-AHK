@@ -13,7 +13,7 @@ class MyGui {
 		configFile.data := EzConf(configFile.data, {})
 		this.reloadYTDL()
 		this.checkConf()
-		OnExit(ObjBindMethod(this, "saveData"))
+		OnExit(ObjBindMethod(this, "close"))
 	}
 
 	reloadYTDL() {
@@ -71,14 +71,17 @@ class MyGui {
 		configFile.save()
 	}
 
-	close(Reason := "") {
-		if !ifIn(Reason, "Shutdown,Single") {
-			MsgBox, 4, Exit, Are you sure you want to exit?
-			IfMsgBox No
+	close(Reason, code) {
+		if (code == 99999999) {
+			return
+		}
+		if !ifIn(Reason, "Shutdown") {
+			if (this.gui.wnd.checkClose()) {
 				return 1
+			}
 		}
 
-		ExitApp 0
+		return
 	}
 
 

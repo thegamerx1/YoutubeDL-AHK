@@ -3,6 +3,7 @@ function ready() {
 		videoquality: $("#videoqualitymodal"),
 		settings: $("#settingsModal"),
 		console: $("#consoleModal"),
+		confirmClose: $("#confirmClose"),
 		error: $("#errorModal")
 	}
 	els = {}
@@ -15,6 +16,7 @@ function ready() {
 }
 
 function debug() {
+	modals.confirmClose.modal("show")
 	let currentVideo = {
 		title: "LOREM LOREM LOREM LOREM LOREM LOREM LOREM",
 		formats: [{ format_id: 0, format: "202 - 720p60" }],
@@ -295,4 +297,24 @@ function showErrorDialog(title, text) {
 	modal.modal("show")
 	modal.find(".modal-title").html(title)
 	modal.find(".console code").html(text)
+}
+
+function checkClose() {
+	let hasUnDoneVideos = false
+	els.videolist.find(".video").each(function() {
+		if (this.getAttribute("done") == "false") {
+			hasUnDoneVideos = true
+			return false
+		}
+	})
+	if (hasUnDoneVideos) {
+		modals.confirmClose.modal("show")
+		return true
+	} else {
+		return false
+	}
+}
+
+function EXIT() {
+	gui.close("force")
 }
