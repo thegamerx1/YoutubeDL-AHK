@@ -5,6 +5,7 @@
 	<title>Youtube Downloader</title>
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 </head>
 
 <body>
@@ -12,31 +13,35 @@
 	<div id="loader"></div>
 	<div class="progress nav-progress" name="nav"><div class="progress-bar"></div></div>
 
-	<div id="buttons">
-		<button class="btn btn-primary" onclick="ahk.openFolder()">Open Folder</button>
-		<button class="btn btn-primary" onclick="openSettingsModal()">Settings</button>
-	</div>
-
-	<form onsubmit="getDataButton()" id="videoUrl">
-		<div class="input-group px-3">
-			<div class="input-group-prepend">
-				<span class="input-group-text">https://</span>
-			</div>
-			<input type="text" class="form-control" name="video" placeholder="youtube.com/watch?v=" oninput="formatURL(this)">
-			<div class="input-group-append">
-				<button class="btn btn-secondary">Download</button>
-			</div>
+	<main>
+		<div id="buttons">
+			<button class="btn btn-primary" onclick="ahk.openFolder()">Open Folder</button>
+			<button class="btn btn-primary" onclick="openSettingsModal()">Settings</button>
 		</div>
-	</form>
 
-	<div class="container" id="videolist"></div>
+		<form onsubmit="getDataButton()" id="videoUrl">
+			<div class="input-group px-3">
+				<div class="input-group-prepend">
+					<span class="input-group-text" name="protocol">http://</span>
+				</div>
+				<input type="text" maxlength=70 class="form-control" name="video" placeholder="URL or Youtube video id" oninput="formatURL(this)">
+				<div class="input-group-append">
+					<button class="btn btn-secondary">Download</button>
+				</div>
+			</div>
+		</form>
+
+		<div class="container" id="videolist"></div>
+
+		<footer>
+			<a onclick="gui.run(this.href); return false" href="https://github.com/thegamerx1/YoutubeDL-AHK">Github</a>
+		</footer>
+	</main>
 
 	<template name="video">
 		<div class="video bg-dark">
 			<div class="video-body">
-				<div class="video-image">
-					<img>
-				</div>
+				<div class="video-image fit-image fit-height"><img src="https://i.ytimg.com"></div>
 				<div class="video-content">
 					<p class="video-title"></p>
 					<p class="text-muted"><span class="video-format"></span> <span class="video-size"></span></p>
@@ -65,33 +70,39 @@
 					<p class="modal-title">video title</p>
 				</div>
 				<div class="modal-body">
+					<div class="info">
+						<div class="image fit-image fit-width loader"><img src="https://i.ytimg.com"></div>
+						<div class="bot">
+							<span><span name="views">999</span>views</span>
+							<span><span name="time">10:10</span></span>
+							<span><span name="uploader">YouMom</span></span>
+						</div>
+					</div>
 					<form name="videoDownload">
 						<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<label class="input-group-text">Quality</label>
 							</div>
-							<select class="custom-select" name="quality">
-								<option value="11">720p 64fps</option>
-								<option value="20" class="repeated">40p 64fps</option>
-								<option value="40">40p 10fps</option>
+							<select class="custom-select" name="quality" onchange="updateQuality()">
+								<option>720p 64fps</option>
+								<option>40p 64fps</option>
+								<option>40p 10fps</option>
 							</select>
-						</div>
-						<div class="form-check">
-							<label class="form-check-label">
-								<input type="checkbox" class="form-check-input" name="showhidden" onchange="toggleHidden(this.checked)">
-								Hide repeated quality
-							</label>
-						</div>
-						<div class="form-check">
-							<label class="form-check-label">
-								<input type="checkbox" class="form-check-input" name="audio">
-								Download with audio
-							</label>
+							<select class="custom-select" name="format">
+								<option value="11">mp4</option>
+								<option value="20">webm</option>
+							</select>
 						</div>
 						<div class="form-check">
 							<label class="form-check-label">
 								<input type="checkbox" class="form-check-input" name="subtitles">
 								Download subtitles
+							</label>
+						</div>
+						<div class="form-check">
+							<label class="form-check-label">
+								<input type="checkbox" class="form-check-input" name="audio">
+								Download video with audio
 							</label>
 						</div>
 						<small class="form-text text-muted">Will be downloaded to <span class="downto">C:/</span>.</small>
@@ -182,10 +193,10 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<p class="modal-title">Exit? videos are downloading..</p>
+					<p class="modal-title">Exit? videos are downloading</p>
 				</div>
 				<div class="modal-body">
-					<button class="btn btn-sm btn-warning" onclick="EXIT()">Yes</button>
+					<button class="btn btn-sm btn-warning" onclick="gui.exit()">Yes</button>
 					<button class="btn btn-sm btn-secondary" data-dismiss="modal">No</button>
 				</div>
 			</div>
