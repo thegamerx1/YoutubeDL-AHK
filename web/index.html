@@ -127,7 +127,7 @@
 						<div class="input-group">
 							<input type="text" class="form-control" readonly name="downpath">
 							<div class="input-group-append"
-								onclick='setConfValue(this, ahk.chooseFolder("Download videos to:", true))'>
+								onclick='chooseFile("Download folder")'>
 								<button class="btn btn-secondary input-group-text">Browse</button>
 							</div>
 						</div>
@@ -135,7 +135,7 @@
 						<div class="input-group">
 							<input type="text" class="form-control" readonly name="ytdlpath">
 							<div class="input-group-append"
-								onclick='setConfValue(this, ahk.chooseFile("Youtube DL (*.exe)", true))'>
+								onclick='chooseFile("Youtube-dl")'>
 								<button class="btn btn-secondary input-group-text">Browse</button>
 							</div>
 						</div>
@@ -143,7 +143,7 @@
 						<div class="input-group">
 							<input type="text" class="form-control" readonly name="ffmpegpath">
 							<div class="input-group-append"
-								onclick='setConfValue(this, ahk.chooseFile("Ffmpeg (*.exe)", true))'>
+								onclick='chooseFile("Ffmpeg")'>
 								<button class="btn btn-secondary input-group-text">Browse</button>
 							</div>
 						</div>
@@ -189,15 +189,33 @@
 		</div>
 	</div>
 
-	<div class="modal fade" id="confirmClose" data-keyboard="false" data-backdrop="static">
+	<div class="modal fade action-modal" id="confirmClose" data-keyboard="false" data-backdrop="static">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<div class="modal-header">
-					<p class="modal-title">Exit? videos are downloading</p>
+				<span class="close" data-dismiss="modal">×</span>
+				<div>
+					<p class="title">Exit? Videos are downloading</p>
 				</div>
-				<div class="modal-body">
-					<button class="btn btn-sm btn-warning" onclick="gui.exit()">Yes</button>
-					<button class="btn btn-sm btn-secondary" data-dismiss="modal">No</button>
+				<div class="actions">
+					<button class="btn btn-danger" onclick="gui.exit()">Yes</button>
+					<button class="btn btn-primary" data-dismiss="modal">No</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade action-modal" id="fileModal" data-keyboard="false" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div>
+					<p class="title"><span class="file">Youtube-DL</span> not found</p>
+				</div>
+				<div class="actions">
+					<button class="btn btn-primary" onclick="fileDialog('choose')">Choose file</button>
+					<button class="btn btn-secondary" onclick="fileDialog('download')">Download</button>
+				</div>
+				<div class="progress" name="fileModal">
+					<div class="progress-bar"></div>
 				</div>
 			</div>
 		</div>
