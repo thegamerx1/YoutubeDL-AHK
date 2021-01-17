@@ -1,4 +1,5 @@
 function ready() {
+	templates = generateTemplates()
 	modals = {
 		videoquality: $("#videoqualitymodal"),
 		settings: $("#settingsModal"),
@@ -6,21 +7,32 @@ function ready() {
 		confirmClose: $("#confirmClose"),
 		error: $("#errorModal")
 	}
-	els = {}
-	els.videoUrl = $("#videoUrl")
-	els.videolist = $("#videolist")
-	els.logs = {}
+
+	const modal = modals.videoquality // For clearer code
+	els = {
+		videoUrl: $("#videoUrl"),
+		videolist: $("#videolist"),
+		qualitySelect: modal.find("select[name=quality]"),
+		formatSelect: modal.find("select[name=format]"),
+	}
+
+	data = {
+		logs: {},
+		queueReady: true,
+		queue: [],
+		currentVideo: null
+	}
 
 	$("form").submit(false)
 	removeLoader()
 }
 
 function debug() {
-	modals.confirmClose.modal("show")
+	// modals.videoquality.modal("show")
 	let currentVideo = {
 		title: "LOREM LOREM LOREM LOREM LOREM LOREM LOREM",
 		formats: [{ format_id: 0, format: "202 - 720p60" }],
-		thumbnails: [{ "width": 168, "height": 94, "url": "https://i.ytimg.com/vi/n-a_jpyhpG0/hqdefault.jpg?sqp=-oaymwEZCNACELwBSFXyq4qpAwsIARUAAIhCGAQ==&rs=AOn4CLChfBR9ioRweadFcbHhrxZkw", "id": "0", "resolution": "168x94" }, { "width": 196, "height": 110, "url": "https://i.ytimg.com/vi/n-a_jpyhpG0/hqdefault.jpg?sqp=-oaymwEYCMQBEG5IVfKriqkDCwgBFQAAiEIYAXAB&rs=AOn4CLAZra0w3qtahDjWblwUP8J1ugyW3Q", "id": "1", "resolution": "196x110" }, { "width": 246, "height": 138, "url": "https://i.ytimg.com/vi/n-a_jpyhpG0/hqdefault.jpg?sqp=-oaymwEZCPYBEIoBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLDd70CWeOEJQTSUOFtS27vjpVrRVg", "id": "2", "resolution": "246x138" }, { "width": 336, "height": 188, "url": "https://i.ytimg.com/vi/n-a_jpyhpG0/hqdefault.jpg?sqp=-oaymwEZCNACELwBSFXyq4qpAwsIARU6BR9ioRweadFcbHhrxZkw", "id": "3", "resolution": "336x188" }],
+		thumbnails: [{"url": "https://i.ytimg.com/vi/nI8Q1bqT8QU/hqdefault.jpg"}],
 		id: "asdasd",
 		webpage_url: "h3nt41/sdasdad"
 	}
@@ -61,7 +73,7 @@ function debuggy() {
 }
 
 function addVideo(qid, videodata) {
-	let video = $("template[name=video]").contents().clone(true)
+	video = templates.video.contents().clone(true)
 	let img = video.find("img")
 	video.find(".video-title").html(videodata.title)
 	var formatString
@@ -77,26 +89,21 @@ function addVideo(qid, videodata) {
 	video.attr("downloadedonce", false)
 	video.attr("done", false)
 	video.attr("downpercent", 0)
-	els.logs[videodata.webpage_url] = "[URL] "+videodata.webpage_url+"\n"
+	data.logs[videodata.webpage_url] = "[URL] "+videodata.webpage_url+"\n"
 	els.videolist.append(video)
-	let thumbnail
-	$(videodata.thumbnails).reverse().each(function () {
-		if (this.url.includes(".webp")) return //for ie shit
-		var req = new XMLHttpRequest()
-		req.open("GET", this.url, false)
-		req.send()
-		if (req.status !== 200) return
-		this.url = this.url.replace(/\?sqp=.*/, "") // Remove youtube tracking get param because it breaks IE ufxcking
-		thumbnail = this.url
-		return false
-	})
-	img.prop("src", thumbnail)
+	img.prop("src", videodata.thumbnail)
 }
 
 function formatURL(e) {
-	let regex = e.value.match(/https:\/\/(www\.)?(.+)/)
+	let regex = e.value.match(/(\w+:\/\/)(www\.)?(.+)/)
 	if (regex) {
-		e.value = regex[2]
+		e.value = regex[3]
+		els.videoUrl.find("[name=protocol]").html(regex[1])
+	} else {
+		let regex = e.value.match(/^([\w-]{6,})$/)
+		if (regex) {
+			e.value = "youtube.com/watch?v=" + regex[1]
+		}
 	}
 }
 
@@ -105,50 +112,88 @@ function getDataButton() {
 	setProgress("nav", 0)
 	setTimeout(function () {
 		setProgress("nav", 20)
-	}, 10);
-	let data = formString(els.videoUrl)
+	}, 0);
+	const data = formObject(els.videoUrl)
 	els.videoUrl.find(":input").prop("disabled", true)
-	let response = ahk.getVideoData("https://" + data.video)
-	let parsed
-	let error = false
+	let error = ""
+	const url = els.videoUrl.find("[name=protocol]").html() + data.video
+	const response = ahk.getVideoData(url)
 	try {
-		parsed = JSON.parse(response)
+		var parsed = JSON.parse(response)
 	} catch (e) {
-		error = true
-		showErrorDialog("Error parsing", response)
+		error = e
 	}
-	if (!error) openVideoModal(parsed)
+
+	let regex = response.match(/\[error\] (.+)/i)
+	if (regex) {
+		error = regex[1]
+	}
+
+	if (error) {
+		showErrorDialog("Error parsing", error)
+	} else {
+		openVideoModal(parsed)
+	}
 	setProgress("nav", 0)
 	$(".progress[name=nav]").removeClass("show")
 	els.videoUrl.find(":input").prop("disabled", false).val("")
 }
 
 function openVideoModal(response) {
-	var modal = modals.videoquality
+	let modal = modals.videoquality
 	modal.modal("show")
 	modal.find(".modal-title").html(response.title)
 	modal.find(".downto").html(JSON.parse(ahk.getConf()).downpath)
 	modal.find("input[name=showhidden]").prop("checked", true)
 	modal.find("input[name=audio]").prop("checked", true)
 	modal.find("input[name=subtitles]").prop("checked", false)
+	modal.find("span[name=views]").html(response.view_count)
+	modal.find("span[name=time]").html(new Date(response.duration * 1000).toISOString().substr(11, 8))
+	modal.find("span[name=uploader]").html(response.uploader)
+	let image = modal.find(".image img")
+	image.prop("src", "")
+	image.parent().addClass("loader")
 
-	let quality = modal.find("select[name=quality]")
-	quality.empty()
-
-	let checkedOnes = []
+	els.qualitySelect.empty()
+	let formats = {}
 	response.formats.forEach(function (format) {
-		let option = document.createElement("option")
-		option.value = format.format_id
-		option.innerHTML = format.format + " " + format.ext
-		if (checkedOnes.includes(format.format_note)) {
-			option.classList.add("repeated")
-		} else {
-			checkedOnes.push(format.format_note)
+		if (!formats.hasOwnProperty(format.format_note)) {
+			formats[format.format_note] = []
+			let option = document.createElement("option")
+			option.value = format.format_note
+			option.isAudio = format.format.includes("audio")
+			option.innerHTML = (option.isAudio ? "Audio" : format.format_note)
+			els.qualitySelect.append(option)
 		}
-		quality[0].appendChild(option)
+		formats[format.format_note].push({ext: format.ext, id:format.format_id, data: format.tbr})
 	})
-	els.currentVideo = response
-	toggleHidden(1)
+	response.formats = formats
+	$(response.thumbnails).reverse().each(function () {
+		if (this.url.includes(".webp")) return //for ie shit
+		var req = new XMLHttpRequest()
+		req.open("GET", this.url, false)
+		req.send()
+		if (req.status !== 200) return
+		this.url = this.url.replace(/\?sqp=.*/, "") // Remove youtube tracking get param because it breaks IE ufxcking
+		response.thumbnail = this.url
+		return false
+	})
+	gui.log(response.thumbnail)
+	image.prop("src", response.thumbnail)
+	image.parent().removeClass("loader")
+	data.currentVideo = response
+	updateQuality()
+}
+
+function updateQuality() {
+	const qualityNote = els.qualitySelect.val()
+	els.formatSelect.empty()
+	$(data.currentVideo.formats[qualityNote]).each(function () {
+		let option = document.createElement("option")
+		option.value = this.id
+		option.innerHTML = this.ext +" "+ Math.floor(this.data) +"kbps"
+		els.formatSelect.append(option)
+	})
 }
 
 function openSettingsModal() {
@@ -158,28 +203,51 @@ function openSettingsModal() {
 
 function settingsSave() {
 	modals.settings.modal("hide")
-	let data = formString(modals.settings)
+	let data = formObject(modals.settings)
 	ahk.setConf(JSON.stringify(data))
 }
 
 function downloadVideo() {
 	modals.videoquality.modal("hide")
-	let data = formString(document.forms["videoDownload"])
-	addVideo(data.quality, els.currentVideo)
+	let formdata = formObject(document.forms["videoDownload"])
+	addVideo(formdata.extension, data.currentVideo)
+	const select = els.qualitySelect[0]
+	let qualityOption = select.options[select.selectedIndex]
+	var format = formdata.format
+	if (!qualityOption.isAudio && formdata.audio) format += "+bestaudio"
+	data.queue.push({ form: JSON.stringify(formdata), format: format, url: data.currentVideo.webpage_url})
+	checkQueue()
+}
+
+function checkQueue(ready) {
 	setTimeout(function () {
-		ahk.downloadVideo(JSON.stringify(data), els.currentVideo.webpage_url)
-		els.currentVideo = false
-	}, 0);
+		if (ready) data.queueReady = true
+		if (!data.queueReady) return
+		let video = data.queue.pop()
+		if (typeof video !== "object") return
+		ahk.downloadVideo(video.form, video.format, video.url)
+		data.queueReady = false
+	}, 0)
 }
 
 function setProgress(name, value) {
-	$(".progress[name="+name+"] .progress-bar").css("width", value + "%")
+	let progress
+	if (typeof name == "object") {
+		progress = $(name)
+	} else {
+		progress = $(".progress[name=" + name + "] .progress-bar")
+	}
+	if (value == 0) progress.addClass("notransition")
+	progress.css("width", value + "%")
+	setTimeout(function() {
+		progress.removeClass("notransition")
+	}, 1000)
 }
 
 function updateProgress(url, percent, speed, size, eta) {
 	els.videolist.find(".video[id=\""+url+"\"][done=false]").each(function () {
 		if (isNaN(percent)) {
-			els.logs[url] += "[COMMAND] "+percent+"\n"
+			data.logs[url] += "[COMMAND] "+percent+"\n"
 			return
 		}
 		var video = $(this)
@@ -188,16 +256,9 @@ function updateProgress(url, percent, speed, size, eta) {
 		let msg = "Downloading"
 		let progressbar = video.find(".progress-bar")
 
-		if (progressbar.hasClass("notransition")) progressbar.removeClass("notransition")
-
-		if (video.attr("downloadedonce") == "true") {
-			msg = "Downloading audio"
-		}
-
 		if (percent == "100") {
 			video.attr("downloadedonce", true)
 		}
-
 
 		if (percent == "101") {
 			video.attr("done", true)
@@ -211,18 +272,18 @@ function updateProgress(url, percent, speed, size, eta) {
 				msg = "Downloaded"
 				msgprogress = "100%"
 				finished = true
+				checkQueue(true)
 			}
 		}
 
 
 		percent = (percent > 100 ? 100 : percent)
-		progressbar.css("width", percent + "%")
+		setProgress(progressbar, percent)
 		video.find(".text-info").html(msg)
 		video.find(".text-progress").html(msgprogress)
 		if (!finished) {
 			if (video.attr("downpercent") > percent) {
-				progressbar.addClass("notransition")
-				progressbar.css("width", "0%")
+				setProgress(progressbar, 0)
 			}
 			video.attr("downpercent", percent)
 			if (!video.find(".video-size").html()) {
@@ -233,22 +294,6 @@ function updateProgress(url, percent, speed, size, eta) {
 	})
 }
 
-function toggleHidden(hidden) {
-	let select = modals.videoquality.find("select[name=quality]")
-	if (hidden) {
-		els.hiddenOpts = []
-		select.children().each(function () {
-			if (this.classList.contains("repeated")) {
-				els.hiddenOpts.push($(this).detach())
-			}
-		})
-	} else {
-		els.hiddenOpts.forEach(function (option) {
-			option.appendTo(select)
-		})
-		els.hiddenOpts = []
-	}
-}
 
 function videoAction(e, action) {
 	e = $(e).closest(".video")
@@ -262,7 +307,7 @@ function videoAction(e, action) {
 			modals.console.modal("show")
 			els.videolist.attr("logsactive", url)
 			modals.console.find(".modal-title").html(e.data("videoname"))
-			modals.console.find(".console code").html(els.logs[url])
+			modals.console.find(".console code").html(data.logs[url])
 	}
 }
 
@@ -271,10 +316,10 @@ function setLogs() {
 }
 
 function log(url, text) {
-	els.logs[url] += text
+	data.logs[url] += text
 	let textarea = modals.console.find(".console code")[0]
 	if (els.videolist.attr("logsactive") == url) {
-		textarea.innerHTML = els.logs[url]
+		textarea.innerHTML = data.logs[url]
 		textarea.scrollTop = textarea.scrollHeight
 	}
 }
@@ -309,12 +354,8 @@ function checkClose() {
 	})
 	if (hasUnDoneVideos) {
 		modals.confirmClose.modal("show")
-		return true
 	} else {
-		return false
+		gui.exit()
 	}
-}
-
-function EXIT() {
-	gui.close("force")
+	return hasUnDoneVideos
 }
