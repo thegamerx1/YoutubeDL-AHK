@@ -5,7 +5,8 @@ function ready() {
 		settings: $("#settingsModal"),
 		console: $("#consoleModal"),
 		confirmClose: $("#confirmClose"),
-		error: $("#errorModal")
+		error: $("#errorModal"),
+		file: $("#fileModal")
 	}
 
 	const modal = modals.videoquality // For clearer code
@@ -28,7 +29,7 @@ function ready() {
 }
 
 function debug() {
-	// modals.videoquality.modal("show")
+	modals.file.modal("show")
 	let currentVideo = {
 		title: "LOREM LOREM LOREM LOREM LOREM LOREM LOREM",
 		formats: [{ format_id: 0, format: "202 - 720p60" }],
@@ -196,15 +197,14 @@ function updateQuality() {
 	})
 }
 
-function openSettingsModal() {
-	modals.settings.modal("show")
+function openSettingsModal(refreshOnly) {
+	if (!refreshOnly) modals.settings.modal("show")
 	setDataToForm(modals.settings, JSON.parse(ahk.getConf()))
 }
 
 function settingsSave() {
 	modals.settings.modal("hide")
-	let data = formObject(modals.settings)
-	ahk.setConf(JSON.stringify(data))
+	ahk.setConf()
 }
 
 function downloadVideo() {
@@ -308,6 +308,7 @@ function videoAction(e, action) {
 			els.videolist.attr("logsactive", url)
 			modals.console.find(".modal-title").html(e.data("videoname"))
 			modals.console.find(".console code").html(data.logs[url])
+			break
 	}
 }
 
@@ -342,6 +343,35 @@ function showErrorDialog(title, text) {
 	modal.modal("show")
 	modal.find(".modal-title").html(title)
 	modal.find(".console code").html(text)
+}
+function showFileDialog(file, isLocal) {
+	let modal = modals.file
+	modal.find(".btn-secondary").prop("disabled", isLocal ? true : "")
+	modal.data("file", file)
+	modal.modal("show")
+	modal.find(".file").html(file)
+}
+
+function chooseFile(type) {
+	ahk.chooseFile(type)
+	openSettingsModal(true)
+}
+
+function fileDialog(action) {
+	let modal = modals.file
+	switch (action) {
+		case "choose":
+			ahk.chooseFile(modal.data("file"))
+			break
+		case "download":
+			ahk.downloadFile(modal.data("file"))
+			break
+	}
+	if (ahk.checkConf()) modal.modal("hide")
+}
+
+function fileProgress(percent, speed) {
+	setProgress("fileModal", percent)
 }
 
 function checkClose() {
