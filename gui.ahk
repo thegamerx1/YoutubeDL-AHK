@@ -9,15 +9,19 @@ class MyGui {
 			,browserhtml: "web/"})
 
 		this.gui.inithooks()
-		this.gui.visible := true
 		configFile.data := EzConf(configFile.data, {})
-		this.reloadYTDL()
 		this.checkConf()
-		OnExit(ObjBindMethod(this, "close"))
+		this.reloadYTDL()
+		this.gui.visible := true
 	}
 
 	reloadYTDL() {
-		this.ytdlopts := configFile.data.ytdlpath " --ffmpeg-location """ configFile.data.ffmpegpath """ --config-location """ A_ScriptDir "/youtube-dl.conf"" "
+		this.ytdlopts := configFile.data.ytdlpath " --ffmpeg-location """ configFile.data.ffmpegpath """ "
+		conf := getCompiledFile("youtube-dl.conf")
+		splitted := StrSplit(conf, "`n")
+		for key, value in splitted {
+			this.ytdlopts .= value " "
+		}
 	}
 
 	checkConf() {
@@ -67,21 +71,12 @@ class MyGui {
 		Run % configFile.data.downpath
 	}
 
-	saveData() {
+	save() {
 		configFile.save()
 	}
 
-	close(Reason, code) {
-		if (code == 99999999) {
-			return
-		}
-		if !ifIn(Reason, "Shutdown") {
-			if (this.gui.wnd.checkClose()) {
-				return 1
-			}
-		}
-
-		return
+	close() {
+		return this.gui.wnd.checkClose()
 	}
 
 
@@ -89,6 +84,7 @@ class MyGui {
 		local
 		if RegExMatch(out, "O)\[download\]\s+(?<percent>\d+)(\.\d+)?%\s+of\s+(?<size>[\d\.\w]+)(\sat\s+(?<speed>[\d\.\w]+\/s)\sETA\s(?<ETA>[\d:]+))?", match) {
 			this.gui.wnd.updateProgress(url, match.percent, match.speed, match.size, match.eta)
+			return
 		}
 		this.gui.wnd.log(url, out)
 		if (finished) {
@@ -97,11 +93,9 @@ class MyGui {
 		}
 	}
 
-	downloadVideo(data, url) {
+	downloadVideo(data, format, url) {
 		data := json.load(data)
-		command := this.ytdlopts "-o """ configFile.data.downpath "\%(title)s.%(ext)s"" -f " data.quality
-		if data.audio
-			command .= "+bestaudio"
+		command := this.ytdlopts "-o """ configFile.data.downpath "\%(title)s.%(ext)s"" -f " format
 		if data.subtitles
 			command .= " --embed-subs --all-subs"
 		command .= " " url
