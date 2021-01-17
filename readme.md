@@ -1,6 +1,14 @@
-[youtube-dl](https://github.com/ytdl-org/youtube-dl) gui with ahk
+**Compiled Download**: https://github.com/thegamerx1/YoutubeDL-AHK/releases/
 
-DOWNLOAD COMPILED AT: https://github.com/thegamerx1/YoutubeDL-AHK/releases/
+## Features
+* Download video/audio
+* Custom download folder
+* Quality option (with audio only)
+* Download with subtitles
+
+## Todo
+* Continue downloads after close
+* Playlist support
 
 ## KNOWN ISSUES
 * Enter key doesnt submit forms
