@@ -8,11 +8,12 @@ class MyGui {
 			,browser: true
 			,browserhtml: "web/"})
 
+		configFile.data := EzConf(configFile.data, {ffmpegpath: "bin\ffmpeg.exe", ytdlpath: "bin\youtube-dl.exe"})
+		OnExit(ObjBindMethod(this, "save"))
 		this.gui.inithooks()
-		configFile.data := EzConf(configFile.data, {})
+		this.gui.visible := true
 		this.checkConf()
 		this.reloadYTDL()
-		this.gui.visible := true
 	}
 
 	reloadYTDL() {
@@ -26,27 +27,66 @@ class MyGui {
 
 	checkConf() {
 		if !FileExist(configFile.data.downpath) {
-			configFile.data.downpath := this.chooseFolder("Download videos to:")
+			this.gui.wnd.showFileDialog("Download folder", true)
+			return
 		}
 		if !FileExist(configFile.data.ytdlpath) {
-			configFile.data.ytdlpath := this.chooseFile("Youtube DL (*.exe)")
+			this.gui.wnd.showFileDialog("Youtube-dl")
+			return
 		}
 		if !FileExist(configFile.data.ffmpegpath) {
-			configFile.data.ffmpegpath := this.chooseFile("Ffmpeg (*.exe)")
+			this.gui.wnd.showFileDialog("Ffmpeg")
+			return
+		}
+		return 1
+	}
+
+	chooseFile(type) {
+		Switch type {
+			case "Youtube-dl":
+				configFile.data.ytdlpath := this._chooseFile("Choose Youtube-dl path", "Youtube-dl (*.exe)")
+			case "Ffmpeg":
+				configFile.data.ffmpegpath := this._chooseFile("Choose ffmpeg path", "Ffmpeg (*.exe)")
+			case "Download folder":
+				configFile.data.downpath := this._chooseFolder("Choose download path")
 		}
 	}
 
-	chooseFolder(text, bypass := false) {
+	downloadFile(type) {
+		if !FileExist("bin/") {
+			FileCreateDir bin/
+		}
+		Switch type {
+			case "Youtube-dl":
+				url := "https://yt-dl.org/downloads/2021.01.16/youtube-dl.exe"
+				file := "bin/youtube-dl.exe"
+			case "Ffmpeg":
+				url := "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z"
+				file := "bin/ffmpeg-extactme.7z"
+		}
+		download := new fileDownloader(url, file, ObjBindMethod(this, "fileDownload"))
+		if (type = "ffmpeg") {
+
+		}
+		Switch type {
+			case "Youtube-dl":
+				configFile.data.ytdlpath := file
+			case "Ffmpeg":
+				MsgBox Ffmpeg has been downloaded please extact the file manually`nFFmpeg.exe should be at the bin folder inside the 7z, File downloaded
+		}
+	}
+
+	fileDownload(args*) {
+		this.gui.wnd.fileProgress(args*)
+	}
+
+	_chooseFolder(text) {
 		FileSelectFolder, folder, ::{20d04fe0-3aea-1069-a2d8-08002b30309d},, %text%
-		if (!bypass && !folder)
-			ExitApp 1
 		return folder
 	}
 
-	chooseFile(filter, bypass := false) {
-		FileSelectFile, file, 1, ::{20d04fe0-3aea-1069-a2d8-08002b30309d},, %filter%
-		if (!bypass && !file)
-			ExitApp 1
+	_chooseFile(title, filter) {
+		FileSelectFile, file, 1, ::{20d04fe0-3aea-1069-a2d8-08002b30309d}, %title%, %filter%
 		return file
 	}
 
@@ -62,8 +102,7 @@ class MyGui {
 		return JSON.dump(configFile.data)
 	}
 
-	setConf(data) {
-		configFile.data := JSON.load(data)
+	setConf() {
 		this.reloadYTDL()
 	}
 
