@@ -2,3 +2,4 @@ youtube-dl.exe
 *.code-workspace
 settings.json
 lib\
+web/minify
