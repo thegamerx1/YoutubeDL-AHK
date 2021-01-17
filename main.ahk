@@ -9,6 +9,7 @@ Return
 
 #Include gui.ahk
 #Include <debug>
+#Include <fileDownloader>
 #Include <RunCMD>
 #Include <configloader>
 #Include <EzGui>
