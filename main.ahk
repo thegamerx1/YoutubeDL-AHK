@@ -12,3 +12,6 @@ Return
 #Include <RunCMD>
 #Include <configloader>
 #Include <EzGui>
+
+FileInstall web/minify/index.html, ~
+FileInstall youtube-dl.conf, ~
