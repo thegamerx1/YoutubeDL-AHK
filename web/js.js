@@ -9,7 +9,7 @@ function ready() {
 		file: $("#fileModal")
 	}
 
-	const modal = modals.videoquality // For clearer code
+	const modal = modals.videoquality
 	els = {
 		videoUrl: $("#videoUrl"),
 		videolist: $("#videolist"),
@@ -29,7 +29,7 @@ function ready() {
 }
 
 function debug() {
-	modals.file.modal("show")
+	// modals.file.modal("show")
 	let currentVideo = {
 		title: "LOREM LOREM LOREM LOREM LOREM LOREM LOREM",
 		formats: [{ format_id: 0, format: "202 - 720p60" }],
@@ -114,7 +114,7 @@ function getDataButton() {
 	setTimeout(function () {
 		setProgress("nav", 20)
 	}, 0);
-	const data = formObject(els.videoUrl)
+	let data = formObject(els.videoUrl)
 	els.videoUrl.find(":input").prop("disabled", true)
 	let error = ""
 	const url = els.videoUrl.find("[name=protocol]").html() + data.video
@@ -214,7 +214,7 @@ function downloadVideo() {
 	const select = els.qualitySelect[0]
 	let qualityOption = select.options[select.selectedIndex]
 	var format = formdata.format
-	if (!qualityOption.isAudio && formdata.audio) format += "+bestaudio"
+	if (!qualityOption.isAudio && formdata.audio) format += "+bestaudio/"+format
 	data.queue.push({ form: JSON.stringify(formdata), format: format, url: data.currentVideo.webpage_url})
 	checkQueue()
 }
