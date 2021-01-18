@@ -23,7 +23,6 @@ function ready() {
 		queue: [],
 		currentVideo: null
 	}
-
 	$("form").submit(false)
 	removeLoader()
 }
@@ -225,7 +224,9 @@ function checkQueue(ready) {
 		if (!data.queueReady) return
 		let video = data.queue.pop()
 		if (typeof video !== "object") return
-		ahk.downloadVideo(video.form, video.format, video.url)
+		setTimeout(function() {
+			ahk.downloadVideo(video.form, video.format, video.url)
+		}, 10)
 		data.queueReady = false
 	}, 0)
 }
