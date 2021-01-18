@@ -53,26 +53,26 @@ class MyGui {
 	}
 
 	downloadFile(type) {
-		if !FileExist("bin/") {
-			FileCreateDir bin/
-		}
+		FileCreateDir bin/
 		Switch type {
 			case "Youtube-dl":
 				url := "https://yt-dl.org/downloads/2021.01.16/youtube-dl.exe"
 				file := "bin/youtube-dl.exe"
 			case "Ffmpeg":
-				url := "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z"
-				file := "bin/ffmpeg-extactme.7z"
+				url := "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+				file := "bin/ffmpeg-extactme.zip"
 		}
 		download := new fileDownloader(url, file, ObjBindMethod(this, "fileDownload"))
-		if (type = "ffmpeg") {
-
-		}
 		Switch type {
 			case "Youtube-dl":
 				configFile.data.ytdlpath := file
 			case "Ffmpeg":
-				MsgBox Ffmpeg has been downloaded please extact the file manually`nFFmpeg.exe should be at the bin folder inside the 7z, File downloaded
+				this.gui.wnd.fileProgress(0)
+				UnZip("bin/ffmpeg-extactme.zip", "ffmpeg.exe", "bin/ffmpeg.exe")
+				this.gui.wnd.fileProgress(90)
+				sleep 200
+				FileDelete bin/ffmpeg-extactme.zip
+				this.gui.wnd.fileProgress(100)
 		}
 	}
 
@@ -121,7 +121,7 @@ class MyGui {
 
 	refresh(url, out, finished) {
 		local
-		if RegExMatch(out, "O)\[download\]\s+(?<percent>\d+)(\.\d+)?%\s+of\s+(?<size>[\d\.\w]+)(\sat\s+(?<speed>[\d\.\w]+\/s)\sETA\s(?<ETA>[\d:]+))?", match) {
+		if regex(out, match, ")\[download\]\s+(?<percent>\d+)(\.\d+)?%\s+of\s+(?<size>\~?[\d\.\w]+)(\sat\s+(?<speed>[\d\.\w]+\/s)\sETA\s(?<ETA>[\d:]+))?") {
 			this.gui.wnd.updateProgress(url, match.percent, match.speed, match.size, match.eta)
 			return
 		}
