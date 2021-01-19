@@ -330,15 +330,6 @@ function setConfValue(e, value) {
 	if (value !== "") e.parentElement.querySelector("input").value = value
 }
 
-function isJson(str) {
-	try {
-		JSON.parse(str)
-	} catch (e) {
-		return false
-	}
-	return true
-}
-
 function showErrorDialog(title, text) {
 	let modal = modals.error
 	modal.modal("show")
