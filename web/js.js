@@ -377,13 +377,7 @@ function fileProgress(percent, speed) {
 }
 
 function checkClose() {
-	let hasUnDoneVideos = false
-	els.videolist.find(".video").each(function() {
-		if (this.getAttribute("done") == "false") {
-			hasUnDoneVideos = true
-			return false
-		}
-	})
+	let hasUnDoneVideos = (els.videolist.find(".video[done=false]").length)
 	if (hasUnDoneVideos) {
 		modals.confirmClose.modal("show")
 	} else {
