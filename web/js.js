@@ -326,10 +326,6 @@ function log(url, text) {
 	}
 }
 
-function setConfValue(e, value) {
-	if (value !== "") e.parentElement.querySelector("input").value = value
-}
-
 function showErrorDialog(title, text) {
 	let modal = modals.error
 	modal.modal("show")
