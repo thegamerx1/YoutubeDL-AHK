@@ -238,11 +238,13 @@ function setProgress(name, value) {
 	} else {
 		progress = $(".progress[name=" + name + "] .progress-bar")
 	}
-	if (value == 0) progress.addClass("notransition")
+	if (value == 0) {
+		progress.addClass("notransition")
+		setTimeout(function() {
+			progress.removeClass("notransition")
+		}, 800)
+	}
 	progress.css("width", value + "%")
-	setTimeout(function() {
-		progress.removeClass("notransition")
-	}, 1000)
 }
 
 function updateProgress(url, percent, speed, size, eta) {
