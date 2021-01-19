@@ -226,7 +226,7 @@ function checkQueue(ready) {
 		if (typeof video !== "object") return
 		setTimeout(function() {
 			ahk.downloadVideo(video.form, video.format, video.url)
-		}, 10)
+		}, 0)
 		data.queueReady = false
 	}, 0)
 }
@@ -365,6 +365,7 @@ function fileDialog(action) {
 			ahk.chooseFile(modal.data("file"))
 			break
 		case "download":
+			modal.find(".btn-secondary").prop("disabled", true)
 			ahk.downloadFile(modal.data("file"))
 			break
 	}
