@@ -1,4 +1,4 @@
-RunCMD(CmdLine, Fn:="", WorkingDir:="", Codepage:="CP0") {  ;         RunCMD v0.94
+RunCMD(CmdLine, Fn:="", WorkingDir:="", Codepage:="CP0", stopFunc := "") {  ;         RunCMD v0.94
 	; RunCMD v0.94 by SKAN on D34E/D37C @ autohotkey.com/boards/viewtopic.php?t=74647
 	; Based on StdOutToVar.ahk by Sean @ autohotkey.com/board/topic/15455-stdouttovar
 	DllCall("CreatePipe", "PtrP",hPipeR:=0, "PtrP",hPipeW:=0, "Ptr",0, "Int",0)
@@ -23,9 +23,14 @@ RunCMD(CmdLine, Fn:="", WorkingDir:="", Codepage:="CP0") {  ;         RunCMD v0.
 	File := FileOpen(hPipeR, "h", Codepage)
 
 	sOutput := ""
-	While DllCall("PeekNamedPipe", "Ptr",hPipeR, "Ptr",0, "Int",0, "Ptr",0, "Ptr",0, "Ptr",0)
-        While (Line := File.ReadLine())
+	While DllCall("PeekNamedPipe", "Ptr",hPipeR, "Ptr",0, "Int",0, "Ptr",0, "Ptr",0, "Ptr",0) {
+        While (Line := File.ReadLine()) {
 			sOutput .= Fn ? Fn.Call(Line, 0) : Line
+		}
+		if (IsObject(stopFunc) && stopFunc.call()) {
+			break
+		}
+	}
 
 
 	Fn.Call(Line, 1)
