@@ -1,4 +1,4 @@
 *.code-workspace
 settings.json
-web\minify
+web/minify
 Youtube-Downloader.exe
