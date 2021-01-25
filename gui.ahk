@@ -53,6 +53,9 @@ class MyGui {
 	}
 
 	downloadFile(type) {
+		local download
+		local url
+		local file
 		FileCreateDir bin/
 		Switch type {
 			case "Youtube-dl":
@@ -118,18 +121,12 @@ class MyGui {
 		return this.gui.wnd.checkClose()
 	}
 
+	output(args*) {
+		this.gui.wnd.updateProgress(args*)
+	}
 
-	refresh(url, out, finished) {
-		local
-		if regex(out, match, ")\[download\]\s+(?<percent>\d+)(\.\d+)?%\s+of\s+(?<size>\~?[\d\.\w]+)(\sat\s+(?<speed>[\d\.\w]+\/s)\sETA\s(?<ETA>[\d:]+))?") {
-			this.gui.wnd.updateProgress(url, match.percent, match.speed, match.size, match.eta)
-			return
-		}
-		this.gui.wnd.log(url, out)
-		if (finished) {
-			this.gui.wnd.updateProgress(url, "101")
-			this.gui.wnd.log(url, "[END]")
-		}
+	checkPaused(url) {
+		return this.gui.wnd.queryPaused(url)
 	}
 
 	downloadVideo(data, format, url) {
@@ -138,7 +135,7 @@ class MyGui {
 		if data.subtitles
 			command .= " --embed-subs --all-subs"
 		command .= " " url
-		this.gui.wnd.updateProgress(url, command)
-		RunCMD(command, objbindmethod(this, "refresh", url))
+		this.gui.wnd.updateProgress(url, command, 5)
+		RunCMD(command, objbindmethod(this, "output", url),, ObjBindMethod(this, "checkPaused", url))
 	}
 }
