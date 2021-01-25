@@ -40,15 +40,19 @@
 	<template name="video">
 		<div class="video bg-dark">
 			<div class="video-body">
-				<div class="video-image fit-image fit-height"><img src="https://i.ytimg.com"></div>
+				<div class="video-image fit-image"><img src="https://i.ytimg.com"></div>
 				<div class="video-content">
 					<p class="video-title"></p>
 					<p class="text-muted"><span class="video-format"></span> <span class="video-size"></span></p>
 					<span class="spacer"></span>
-					<p class="text-info">Waiting for download</p>
+					<p class="text-info" name="text-info">Waiting for download</p>
 				</div>
 			</div>
 			<div class="video-footer">
+				<div class="progress">
+					<p name="text-progress"></p>
+					<div class="progress-bar"></div>
+				</div>
 				<div class="buttons">
 					<div class="btn-group">
 						<button class="btn btn-sm" onclick="videoAction(this, 'logs')">Logs</button>
@@ -56,8 +60,6 @@
 						<button class="btn btn-sm" onclick="videoAction(this, 'delet')">Remove</button>
 					</div>
 				</div>
-				<div class="progress-bar overall"></div>
-				<div class="overall text-progress"></div>
 			</div>
 		</div>
 	</template>
@@ -71,7 +73,7 @@
 				</div>
 				<div class="modal-body">
 					<div class="info">
-						<div class="image fit-image fit-width loader"><img src="https://i.ytimg.com"></div>
+						<div class="image fit-image"><img src="https://i.ytimg.com"></div>
 						<div class="bot">
 							<span><span name="views">999</span>views</span>
 							<span><span name="time">10:10</span></span>
@@ -167,8 +169,10 @@
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body">
-					<pre class="console"><code></code></pre>
+				<div class="modal-body flex-column">
+					<input class="form-control" name="command" readonly value="command">
+					<p name="url" value="url"></p>
+					<pre class="console"><code>...</code></pre>
 				</div>
 			</div>
 		</div>
@@ -217,6 +221,19 @@
 				</div>
 				<div class="progress" name="fileModal">
 					<div class="progress-bar"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade action-modal" id="videoExistsModal" data-keyboard="false" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div>
+					<p class="title">That video is already in the queue.</p>
+				</div>
+				<div class="actions">
+					<button class="btn btn-primary" data-dismiss="modal">OK chill</button>
 				</div>
 			</div>
 		</div>
