@@ -31,7 +31,7 @@ main
 			display: flex
 			min-height: 50px
 			img
-				max-height: 30vh
+				max-height: 35vh
 				min-height: 50px
 			&.loader
 				img
@@ -56,8 +56,9 @@ main
 		display: flex
 		flex-direction: row
 		.video-image
-			flex: 1
-			flex-grow: 1.8
+			max-width: 40%
+			@media (max-width: 450px)
+				display: none
 		.video-content
 			padding: .5em
 			flex: 1
@@ -74,39 +75,43 @@ main
 				line-height: 1.1em
 			.spacer
 				flex-grow: 1
+
 	.video-footer
+		display: flex
 		border-top: 1px solid rgba(163, 163, 163, 0.255)
 		position: relative
 		.buttons
+			background: #575757
 			position: relative
-			display: flex
-			justify-content: flex-end
 			z-index: 5
 			button
+				background: rgba(0, 0, 0, .3)
 				padding: .3em .5em
 				background: transparent
 				transition: all .2s ease-in-out
 				&:hover
-					background: rgba(0, 0, 150, .5)
+					background: #00009649
 					&:last-of-type
 						background: rgba(150, 0, 0, .5)
-		.overall
-			display: flex
-			justify-content: center
-			align-items: center
-			position: absolute
-			right: 0
-			left: 0
-			top: 0
-			bottom: 0
-			font-family: Consolas
-		.progress-bar
-			box-shadow: inset 0px 0px 5px 2px rgba(0,0,0,0.3)
-			background-image: linear-gradient(to right, #bcf538, #13d32d)
-			opacity: .5
-		.error
-			background-image: none
-			background: #c23838
+		.progress
+			height: auto
+			background: transparent
+			border-radius: 0
+			.progress-bar
+				box-shadow: inset 0px 0px 5px 2px rgba(0, 0, 0, 0.3)
+				background-image: linear-gradient(to right, #bcf538, #13d32d)
+				opacity: .5
+
+	&.error
+		.video-footer
+			.progress-bar
+				background-image: none
+				background: #c23838
+	&.paused
+		.video-footer
+			.progress-bar
+				background-image: none
+				background: #fcb843
 
 .console-modal
 	.modal-body
