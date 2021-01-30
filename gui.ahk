@@ -8,12 +8,15 @@ class MyGui {
 			,browser: true
 			,browserhtml: "web/"})
 
+		this.gui.inithooks()
 		configFile.data := EzConf(configFile.data, {ffmpegpath: "bin\ffmpeg.exe", ytdlpath: "bin\youtube-dl.exe"})
 		OnExit(ObjBindMethod(this, "save"))
-		this.gui.inithooks()
-		this.gui.visible := true
 		this.checkConf()
-		this.reloadYTDL()
+		this.gui.visible := true
+		this.gui.wnd.setConf()
+		for _, value in videoFile.data {
+			this.gui.wnd.preaddVideo(JSON.dump(value))
+		}
 	}
 
 	reloadYTDL() {
@@ -23,6 +26,7 @@ class MyGui {
 		for key, value in splitted {
 			this.ytdlopts .= value " "
 		}
+		this.gui.wnd.data.ytdlopts := this.ytdlopts
 	}
 
 	checkConf() {
@@ -101,12 +105,9 @@ class MyGui {
 		return jsonraw
 	}
 
-	getConf() {
-		return JSON.dump(configFile.data)
-	}
-
-	setConf() {
+	returnConf() {
 		this.reloadYTDL()
+		return JSON.dump({command: this.ytdlopts, config: configFile.data})
 	}
 
 	openFolder() {
@@ -114,7 +115,9 @@ class MyGui {
 	}
 
 	save() {
+		videoFile.data := JSON.load(this.gui.wnd.saveVideos())
 		configFile.save()
+		videoFile.save()
 	}
 
 	close() {
@@ -129,13 +132,7 @@ class MyGui {
 		return this.gui.wnd.queryPaused(url)
 	}
 
-	downloadVideo(data, format, url) {
-		data := json.load(data)
-		command := this.ytdlopts "-o """ configFile.data.downpath "\%(title)s.%(ext)s"" -f " format
-		if data.subtitles
-			command .= " --embed-subs --all-subs"
-		command .= " " url
-		this.gui.wnd.updateProgress(url, command, 5)
-		RunCMD(command, objbindmethod(this, "output", url),, ObjBindMethod(this, "checkPaused", url))
+	downloadCommand(command, url) {
+		RunCMD(command, objbindmethod(this, "output", url), ObjBindMethod(this, "checkPaused", url))
 	}
 }

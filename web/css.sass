@@ -52,31 +52,37 @@ main
 	border: 1px solid #857A84
 	position: relative
 	margin-bottom: 15px
-	.video-body
+	.body
+		overflow: hidden
 		display: flex
+		min-height: 4em
+		max-height: 6em
 		flex-direction: row
-		.video-image
-			max-width: 40%
+		.image
 			@media (max-width: 450px)
 				display: none
-		.video-content
+			height: 6em
+			width: 10em
+			background-image: url("https://i.ytimg.com")
+			background-size: cover
+			background-repeat: no-repeat
+			background-position: left
+			width: 30%
+		.content
 			padding: .5em
 			flex: 1
-			flex-grow: 3
 			p,span
 				margin: 0
+				line-height: 1
 			display: flex
 			flex-direction: column
-			.video-title
-				text-overflow: ellipsis
+			.title
 				overflow: hidden
 				font-weight: bold
-				max-height: 2.2em
-				line-height: 1.1em
-			.spacer
-				flex-grow: 1
+				line-height: 1.2
+				height: 1.2em
 
-	.video-footer
+	.footer
 		display: flex
 		border-top: 1px solid rgba(163, 163, 163, 0.255)
 		position: relative
@@ -94,6 +100,7 @@ main
 					&:last-of-type
 						background: rgba(150, 0, 0, .5)
 		.progress
+			flex: 1
 			height: auto
 			background: transparent
 			border-radius: 0
@@ -103,12 +110,12 @@ main
 				opacity: .5
 
 	&.error
-		.video-footer
+		.footer
 			.progress-bar
 				background-image: none
 				background: #c23838
 	&.paused
-		.video-footer
+		.footer
 			.progress-bar
 				background-image: none
 				background: #fcb843
