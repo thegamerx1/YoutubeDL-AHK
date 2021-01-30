@@ -1,6 +1,8 @@
-RunCMD(CmdLine, Fn:="", stopFunc := "",  WorkingDir:="", Codepage:="CP0") {  ;         RunCMD v0.94
+RunCMD(CmdLine, Fn:="", stopFunc := "",  WorkingDir:="", Codepage:="CP0") {
+	;         RunCMD v0.94
 	; RunCMD v0.94 by SKAN on D34E/D37C @ autohotkey.com/boards/viewtopic.php?t=74647
 	; Based on StdOutToVar.ahk by Sean @ autohotkey.com/board/topic/15455-stdouttovar
+	local
 	DllCall("CreatePipe", "PtrP",hPipeR:=0, "PtrP",hPipeW:=0, "Ptr",0, "Int",0)
 	DllCall("SetHandleInformation", "Ptr",hPipeW, "Int",1, "Int",1)
 	DllCall("SetNamedPipeHandleState","Ptr",hPipeR, "UIntP",PIPE_NOWAIT:=1, "Ptr",0, "Ptr",0)
@@ -15,22 +17,27 @@ RunCMD(CmdLine, Fn:="", stopFunc := "",  WorkingDir:="", Codepage:="CP0") {  ;  
 
 	if !DllCall("CreateProcess", "Ptr",0, "Str",CmdLine, "Ptr",0, "Int",0, "Int",True ,"Int",0x08000000 | DllCall("GetPriorityClass", "Ptr",-1, "UInt"), "Int",0 ,"Ptr",WorkingDir ? &WorkingDir : 0, "Ptr",&SI, "Ptr",&PI) {
 		Return Format("{1:}", "", ErrorLevel := -1)
-		DllCall("CloseHandle", "Ptr",hPipeW)
-		DllCall("CloseHandle", "Ptr",hPipeR)
+		DllCall("CloseHandle", "Ptr", hPipeW)
+		DllCall("CloseHandle", "Ptr", hPipeR)
 	}
 
 	DllCall("CloseHandle", "Ptr",hPipeW)
 	File := FileOpen(hPipeR, "h", Codepage)
 
 	sOutput := ""
-	While DllCall("PeekNamedPipe", "Ptr",hPipeR, "Ptr",0, "Int",0, "Ptr",0, "Ptr",0, "Ptr",0) {
+	callfunc := (IsObject(Fn))
+	stpfunc := (IsObject(stopFunc))
+	Critical off
+	While DllCall("PeekNamedPipe", "Ptr",hPipeR, "Ptr", 0, "Int", 0, "Ptr", 0, "Ptr", 0, "Ptr", 0) {
+		notcalled := true
         While (Line := File.ReadLine()) {
-			sOutput .= Fn ? Fn.Call(Line, 0) : Line
+			sOutput .= callfunc ? Fn.Call(Line, 0) : Line
+			notcalled := false
 		}
-		if (IsObject(stopFunc) && stopFunc.call()) {
+		if (stpfunc && stopFunc.call())
 			break
-		}
-		sleep 10
+		if (notcalled)
+			sleep 100
 	}
 
 
