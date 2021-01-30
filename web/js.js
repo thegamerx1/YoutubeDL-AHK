@@ -7,10 +7,10 @@ function ready() {
 		confirmClose: $("#confirmClose"),
 		error: $("#errorModal"),
 		file: $("#fileModal"),
-		videoExists: $("#videoExistsModal")
+		videoExists: $("#videoExistsModal"),
+		delete: $("#deleteDialog")
 	}
 
-	console.log("test")
 	const modal = modals.videoquality
 	els = {
 		videoUrl: $("#videoUrl"),
@@ -21,9 +21,9 @@ function ready() {
 
 	data = {
 		logs: {},
+		config: {},
 		queueReady: true,
-		queue: [],
-		currentVideo: null
+		queue: []
 	}
 	$("form").submit(false)
 	removeLoader()
@@ -31,21 +31,20 @@ function ready() {
 
 function debug() {
 	modals.videoquality.modal("show")
-	let currentVideo = {
+	let response = {
 		title: "LOREM LOREM LOREM LOREM LOREM LOREM LOREM",
-		formats: [{ format_id: 0, format: "202 - 720p60" }],
+		formats: [{ format_id: 123, format_note: "0 - 720p60" }, {format_id: 114, format: "test"}],
 		thumbnails: [{"url": "https://i.ytimg.com/vi/nI8Q1bqT8QU/hqdefault.jpg"}],
 		url: "asdasd",
 		webpage_url: "h3nt41/sdasdad"
 	}
-	addVideo(0, currentVideo)
+
+	let video = addVideo(123, response)
+	setVideoThumbnail(response)
+	setVideo(video, response)
 	debugg = {
 		downpercent: 0,
-		downloops: 0,
-		nextpercent: false,
-		sentOnce: true,
-		firstRun: true,
-		url: currentVideo.webpage_url
+		url: response.webpage_url
 	}
 	debuggy()
 }
@@ -53,48 +52,93 @@ function debug() {
 // ? Simulate download in browser for developing epic progressbar
 function debuggy() {
 	debugg.downpercent += random(5, 10)
-	if (debugg.downpercent > 100) {
-		debugg.downpercent = 100
-	}
-	if (debugg.nextpercent) {
-		debugg.percent = 0
-		debugg.nextpercent = false
-	}
-	if (random(1, 20) == 5 && debugg.downloops >= 1) {
-		debugg.downpercent = 101
+	if (debugg.downpercent > 100) debugg.downpercent = 0
+	if (random(1, 20) == 1) {
+		updateProgress(debugg.url, "ERROR: DEBUG", 1)
+		return
 	}
 	log(debugg.url, debugg.downpercent + "%\n")
-	updateProgress(debugg.url, debugg.downpercent, random(100, 8888) + "MB/s", "123MiB", random(10, 59) + ":" + random(10, 59))
-	if (debugg.downpercent == 101) return
+	updateProgress(debugg.url, "[download]  " + debugg.downpercent + "% of 123MiB at " + random(9, 12) + "MiB/s ETA 01:48:52")
 	if (debugg.downpercent == 100) {
-		debugg.nextpercent = true
-		debugg.downloops++
-		debugg.downpercent = 0
+		debugg.nextpercent = 0
 	}
-	setTimeout(debuggy, random(100, 500))
+	setTimeout(debuggy, random(50, 200))
 }
 
-function addVideo(qid, videodata) {
-	video = templates.video.contents().clone(true)
-	let img = video.find("img")
-	video.find(".video-title").html(videodata.title)
-	var formatString
+function setConf() {
+	console.log("Config set")
+	let ahkData = JSON.parse(ahk.returnConf())
+	data.config = ahkData.config
+	data.ytdlopts = ahkData.command
+}
+
+function preaddVideo(videodata) {
+	videodata = JSON.parse(videodata)
+	console.log("Loading video: " + videodata.title)
+	let video = addVideo(videodata.qid)
+	video.find(".title").html(videodata.title)
+	video.data("videoname", videodata.title)
+	video.data("formdata", videodata.formdata)
+	video.data("prevideo", videodata)
+	video.data("paused", false)
+	video.attr("url", videodata.url)
+
+	video.find("[name=pause]").hide()
+	video.find("[name=progress]").html("Restored")
+	if (video.done) {
+		video.find("[name=progress]").html("Downloaded")
+		setProgress(video.find(".progress-bar"), 100)
+	} else {
+		setTimeout(function() {
+			loadVideo(video)
+		}, 65)
+	}
+}
+
+function loadVideo(video) {
+	let videodata = video.data("prevideo")
+	try {
+		const response = getVideoData(videodata.url)
+		setVideoThumbnail(response)
+		setVideo(video, response)
+		video.find("[name=pause]").show()
+		video.data("command", getCommand(videodata.formdata, videodata.qid, videodata.url))
+		videoAction(video.find("[name=pause]"))
+		video.data("prevideo", null)
+	} catch (e) {
+		log(videodata.url, e)
+		video.find("[name=progress]").html("Error see logs")
+		video.find("[name=retry]").show()
+	}
+}
+
+function addVideo(qid, data) {
+	let video = templates.video.contents("div").clone(true)
+	video.data("qid", qid)
+	video.find("[name=start]").hide()
+	video.data("done", false)
+	els.videolist.append(video)
+	if (data) setVideo(video, data)
+	return video
+}
+
+function setVideo(video, videodata) {
+	let img = video.find(".image")
+	let formatString
 	$(videodata.formats).each(function () {
-		if (this.format_id == qid) {
-			formatString = this.format
+		if (this.format_id == video.data("qid")) {
+			formatString = this.format_note ? this.format_note : this.format
 			return false
 		}
 	})
-	video.find(".video-format").html(formatString)
+	video.find("[name=format]").html(formatString)
+	video.find(".title").html(videodata.title)
+	video.data("formats", videodata.formats)
 	video.attr("url", videodata.webpage_url)
 	video.data("videoname", videodata.title)
-	video.data("downloadedonce", false)
-	video.data("setOnce", false)
-	video.data("done", false)
-	video.attr("downpercent", 0)
-	els.videolist.append(video)
 	data.logs[videodata.webpage_url] = ""
-	img.prop("src", videodata.thumbnail)
+	// img.prop("src", videodata.thumbnail)
+	img.css("background-image", "url("+videodata.thumbnail+")")
 }
 
 function formatURL(e) {
@@ -103,8 +147,7 @@ function formatURL(e) {
 		e.value = regex[3]
 		els.videoUrl.find("[name=protocol]").html(regex[1])
 	} else {
-		let regex = e.value.match(/^([\w-]{6,})$/)
-		if (regex) {
+		if (regex = e.value.match(/^([\w-]{6,})$/)) {
 			e.value = "youtube.com/watch?v=" + regex[1]
 		}
 	}
@@ -118,25 +161,27 @@ function getDataButton() {
 	}, 0);
 	let data = formObject(els.videoUrl)
 	els.videoUrl.find(":input").prop("disabled", true)
-	let error = ""
-	const url = els.videoUrl.find("[name=protocol]").html() + data.video
-	const response = ahk.getVideoData(url)
+	let url = els.videoUrl.find("[name=protocol]").html() + data.video
 	try {
-		var parsed = JSON.parse(response)
+		openVideoModal(getVideoData(url))
 	} catch (e) {
-		error = e
-	}
-
-	let regex = response.match(/\[error\] (.+)/i)
-	if (regex) error = regex[1]
-
-	if (error) {
 		showErrorDialog("Error parsing", error)
-	} else {
-		openVideoModal(parsed)
 	}
+
 	resetNav()
 	els.videoUrl.find(":input").prop("disabled", false).val("")
+}
+
+function getVideoData(url) {
+	try {
+		let response = ahk.getVideoData(url)
+		var parsed = JSON.parse(response)
+	} catch (e) {let response = ahk.getVideoData(url)
+		let regex = response.match(/\[?error\]?:?\s+(.+)/i)
+		throw regex ? regex[1] : e
+	}
+
+	return parsed
 }
 
 function resetNav() {
@@ -145,7 +190,8 @@ function resetNav() {
 }
 
 function queryPaused(url) {
-	return getVideo(url).data("paused")
+	let video = getVideo(url)
+	return video.length ? video.data("paused") : 1
 }
 
 function openVideoModal(response) {
@@ -156,11 +202,11 @@ function openVideoModal(response) {
 	let modal = modals.videoquality
 	modal.modal("show")
 	modal.find(".modal-title").html(response.title)
-	modal.find(".downto").html(JSON.parse(ahk.getConf()).downpath)
+	modal.find(".downto").html(data.config.downpath)
 	modal.find("input[name=showhidden]").prop("checked", true)
 	modal.find("input[name=audio]").prop("checked", true)
 	modal.find("input[name=subtitles]").prop("checked", false)
-	modal.find("span[name=views]").html(response.view_count)
+	modal.find("span[name=views]").html(response.view_count.toLocaleString())
 	modal.find("span[name=time]").html(new Date(response.duration * 1000).toISOString().substr(11, 8))
 	modal.find("span[name=uploader]").html(response.uploader)
 	let image = modal.find(".image img")
@@ -180,55 +226,75 @@ function openVideoModal(response) {
 		}
 		formats[format.format_note].push({ext: format.ext, id:format.format_id, data: format.tbr})
 	})
-	response.formats = formats
-	$(response.thumbnails).reverse().each(function () {
+	response.new_formats = formats
+	setVideoThumbnail(response)
+	image.prop("src", response.thumbnail)
+	image.parent().removeClass("loader")
+	modal.data("video", response)
+	updateQuality()
+}
+
+function setVideoThumbnail(response) {
+	$(response.thumbnails.reverse()).each(function () {
 		if (this.url.includes(".webp")) return //for ie shit
 		var req = new XMLHttpRequest()
 		req.open("GET", this.url, false)
 		req.send()
 		if (req.status !== 200) return
-		this.url = this.url.replace(/\?sqp=.*/, "") // Remove youtube tracking get param because it breaks IE ufxcking
+		this.url = this.url.replace(/\?sqp=.+/, "") // Remove youtube tracking get param because it breaks IE ufxcking
 		response.thumbnail = this.url
 		return false
 	})
 	console.log(response.thumbnail)
-	image.prop("src", response.thumbnail)
-	image.parent().removeClass("loader")
-	data.currentVideo = response
-	updateQuality()
 }
 
 function updateQuality() {
+	let modal = modals.videoquality
+	let isAudio = els.qualitySelect.children("option:selected").prop("isAudio")
+	modal.find("[name=isAudio]").val(isAudio)
+
 	const qualityNote = els.qualitySelect.val()
 	els.formatSelect.empty()
-	$(data.currentVideo.formats[qualityNote]).each(function () {
+	$(modal.data("video").new_formats[qualityNote]).each(function () {
 		let option = document.createElement("option")
 		option.value = this.id
-		option.innerHTML = this.ext +" "+ Math.floor(this.data) +"kbps"
+		option.innerHTML = this.ext + " " + Math.floor(this.data) +"kbps"
 		els.formatSelect.append(option)
 	})
 }
 
 function openSettingsModal(refreshOnly) {
 	if (!refreshOnly) modals.settings.modal("show")
-	setDataToForm(modals.settings, JSON.parse(ahk.getConf()))
+	setDataToForm(modals.settings, data.config)
 }
 
 function settingsSave() {
 	modals.settings.modal("hide")
-	ahk.setConf()
+	setConf()
 }
 
 function downloadVideo() {
 	modals.videoquality.modal("hide")
+	let currentVideo = modals.videoquality.data("video")
 	let formdata = formObject(document.forms["videoDownload"])
-	addVideo(formdata.extension, data.currentVideo)
+	let video = addVideo(formdata.format, currentVideo)
 	const select = els.qualitySelect[0]
 	let qualityOption = select.options[select.selectedIndex]
 	var format = formdata.format
+	video.data("formdata", formdata)
+	video.data("isAudio", qualityOption.isAudio)
 	if (!qualityOption.isAudio && formdata.audio) format += "+bestaudio/"+format
-	data.queue.push({ form: JSON.stringify(formdata), format: format, url: data.currentVideo.webpage_url})
+	video.data("command", getCommand(formdata, format, currentVideo.webpage_url))
+	data.queue.push({ command: video.data("command"), url: currentVideo.webpage_url})
 	checkQueue()
+}
+
+function getCommand(form, format, url) {
+	if (!form.isAudio && form.audio) format += "+bestaudio/" + format
+	let command = data.ytdlopts + " -o \"" + data.config.downpath + "/%(title)s.%(ext)s\" -f " + format
+	if (form.subtitles) command += " --embed-subs --all-subs"
+	command += " " + url
+	return command
 }
 
 function checkQueue(ready) {
@@ -241,10 +307,11 @@ function checkQueue(ready) {
 			data.queue.push(video)
 			return
 		}
-		setTimeout(function() {
-			ahk.downloadVideo(video.form, video.format, video.url)
-		}, 0)
 		data.queueReady = false
+		setTimeout(function() {
+			ahk.downloadCommand(video.command, video.url)
+			checkQueue(true)
+		}, 0)
 	}, 0)
 }
 
@@ -260,68 +327,97 @@ function setProgress(name, value) {
 }
 
 function updateProgress(url, message, finished) {
-	console.log(message)
 	var video = getVideo(url)
+	if (video.data("paused") || video.data("done")) return
 	if (finished == 5) {
 		video.data("command", message)
 		return
 	}
-
 	let progressbar = video.find(".progress-bar")
 
-	let match = message.match(/\[download\]\s+(\d+)(\.\d+)?%\s+of\s+(\~?[\d\.\w]+)(\sat\s+([\d\.\w]+\/s)\sETA\s([\d:]+))?/i)
-	let percent = match ? match[1] : 0
-	let size = match ? match[2] : ""
-	let speed = match ? match[5] : ""
-
-	let msgprogress = percent + "% " + speed
+	let percent = ""
+	let size = ""
+	let speed = ""
+	let msgprogress = ""
+	let match = message.match(/\[download\]\s+([\d\.]+)%\s+of\s+([\~\d\.\w]+)(\s+at\s+([\d\.\w\/]+)\s+ETA\s+([\d:]+))?/i)
+	if (match) {
+		percent = parseInt(match[1])
+		size = match[2]
+		speed = match[4]
+	} else {
+		if (match = message.match(/\[download\]\s+([\d\.\w]+)\s+at\s+([\d\.\w\/]+)/i)) {
+			percent = 25
+			size = match[1]
+			speed = match[2]
+		}
+	}
 
 	if (!match) {
 		log(url, message)
-		let errormatch = message.match(/\[error\]\s+(.*)/i)
+		let errormatch = message.match(/\[?error\]?:?\s+(.+)/i)
 		var errormsg = errormatch ? errormatch[1] : null
 		if (finished) {
 			video.data("done", true)
-			checkQueue(true)
-			if (!video.data("downloadedonce") || video.data("downpercent") !== 100) {
-				msg = errormsg ? errormsg : msgprogress
-				msgprogress = "Error downloading"
+
+			if (video.data("downpercent") !== 100 || errormatch) {
+				msgprogress = errormsg ? errormsg : "Error"
 				video.addClass("error")
 			} else {
-				msg = "Downloaded"
-				msgprogress = "100%"
+				msgprogress = "Downloaded"
 			}
+			video.find("[name=pause]").hide()
 			percent = 100
 		} else {
 			let matchy = message.match(/^(\[(?!download)(\w+)\]\s+(.+?))(?:(\s+)?(into|in|to|\:)\s+(\"|\')?\w\:.*)?$/i)
 			if (matchy) msg = matchy[3]
 		}
+	} else {
+		msgprogress = percent + "% " + speed
 	}
 
-
-	if (percent == 100) video.data("downloadedonce", true)
-	if (!video.data("setOnce")) {
+	if (!video.data("setOnce") && size) {
 		video.data("setOnce", true)
-		video.find(".video-size").html(size)
+		video.find("[name=size]").html(size)
 		msg = "Downloading"
 	}
 
-	if (percent) setProgress(progressbar, percent)
-	video.find("[name=text-info]").html(msg)
-	video.find("[name=text-progress]").html(msgprogress)
-	video.data("downpercent", percent)
+	if (Number.isFinite(percent)) {
+		setProgress(progressbar, percent)
+		video.data("downpercent", percent)
+	}
+	if (msgprogress) video.find("[name=progress]").html(msgprogress)
 }
 
 
-function videoAction(e, action) {
+function saveVideos() {
+	let data = []
+	els.videolist.find("> .video").each(function () {
+		let e = $(this)
+		data.push({
+			done: e.data("done"),
+			url: e.attr("url"),
+			title: e.data("videoname"),
+			qid: e.data("qid"),
+			formdata: e.data("formdata")
+		})
+	})
+	return JSON.stringify(data)
+}
+
+function videoAction(e) {
 	e = $(e)
-	video = e.closest(".video")
+	e.prop("disabled", true)
+	let video = e.closest(".video")
 	let url = video.attr("url")
-	switch (action) {
-		case "delet":
-			if (video.data("done") == true)
-			video.remove()
-			delete data.logs[url]
+	switch (e.attr("name")) {
+		case "remove":
+			if (video.data("done")) {
+				video.remove()
+				delete data.logs[url]
+			} else {
+				modals.delete.modal("show")
+				modals.delete.data("url", url)
+			}
 			break
 		case "logs":
 			modals.console.modal("show")
@@ -331,15 +427,23 @@ function videoAction(e, action) {
 			modals.console.find("[name=url]").html(video.attr("url"))
 			modals.console.find(".console code").html(data.logs[url])
 			break
-		case "paus":
+		case "pause":
 			let status = video.data("paused")
 			let paused = !status
 			video.data("paused", paused)
 			video.toggleClass("paused", paused)
 			e.html(paused ? "Resume" : "Pause")
-			checkQueue()
+			video.find("[name=progress]").html(status ? "Resumed" : "Paused")
+			if (status) {
+				data.queue.push({ command: video.data("command"), url: url})
+				checkQueue()
+			}
+			break
+		case "retry":
+			loadVideo(video)
 			break
 	}
+	e.prop("disabled", "")
 }
 
 function getVideo(url) {
@@ -348,6 +452,12 @@ function getVideo(url) {
 
 function setLogs() {
 	els.videolist.attr("logsactive", 0)
+}
+
+function deleteDialog(action) {
+	if (action) {
+		getVideo(modals.delete.data("url")).remove()
+	}
 }
 
 function log(url, text) {
@@ -399,7 +509,7 @@ function fileProgress(percent, speed) {
 function checkClose() {
 	let hasUnDoneVideos = false
 	els.videolist.find("> .video").each(function() {
-		const e = $(e)
+		let e = $(this)
 		if (!e.data("paused") && !e.data("done")) {
 			hasUnDoneVideos = true
 			return false

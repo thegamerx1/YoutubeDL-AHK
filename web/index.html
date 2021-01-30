@@ -39,25 +39,30 @@
 
 	<template name="video">
 		<div class="video bg-dark">
-			<div class="video-body">
-				<div class="video-image fit-image"><img src="https://i.ytimg.com"></div>
-				<div class="video-content">
-					<p class="video-title"></p>
-					<p class="text-muted"><span class="video-format"></span> <span class="video-size"></span></p>
-					<span class="spacer"></span>
-					<p class="text-info" name="text-info">Waiting for download</p>
+			<div class="body">
+				<div class="image"></div>
+				<div class="content">
+					<p class="title"></p>
+
+					<p class="text-muted">
+						<span name="format"></span>
+						<span name="size"></span>
+					</p>
 				</div>
 			</div>
-			<div class="video-footer">
+
+			<div class="footer">
 				<div class="progress">
-					<p name="text-progress"></p>
 					<div class="progress-bar"></div>
+					<span name="progress">Waiting for download</span>
 				</div>
+
 				<div class="buttons">
 					<div class="btn-group">
-						<button class="btn btn-sm" onclick="videoAction(this, 'logs')">Logs</button>
-						<button class="btn btn-sm" onclick="videoAction(this, 'paus')">Pause</button>
-						<button class="btn btn-sm" onclick="videoAction(this, 'delet')">Remove</button>
+						<button class="btn btn-sm" name="logs" onclick="videoAction(this)">Logs</button>
+						<button class="btn btn-sm" name="pause" onclick="videoAction(this)">Pause</button>
+						<button class="btn btn-sm d-none" name="retry" onclick="videoAction(this)">Retry</button>
+						<button class="btn btn-sm" name="remove" onclick="videoAction(this)">Remove</button>
 					</div>
 				</div>
 			</div>
@@ -77,7 +82,7 @@
 						<div class="bot">
 							<span><span name="views">999</span>views</span>
 							<span><span name="time">10:10</span></span>
-							<span><span name="uploader">YouMom</span></span>
+							<span><span name="uploader">not you</span></span>
 						</div>
 					</div>
 					<form name="videoDownload">
@@ -107,6 +112,7 @@
 								Download video with audio
 							</label>
 						</div>
+						<input type="hidden" name="isAudio">
 						<small class="form-text text-muted">Will be downloaded to <span class="downto">C:/</span>.</small>
 					</form>
 				</div>
@@ -226,14 +232,28 @@
 		</div>
 	</div>
 
+	<div class="modal fade action-modal" id="deleteDialog" data-keyboard="false" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div>
+					<p class="title">Are you sure you want to delete <span name="title"></span>?</p>
+				</div>
+				<div class="actions">
+					<button class="btn btn-primary" data-dismiss="modal" onclick="deleteDialog(1)">Remove</button>
+					<button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div class="modal fade action-modal" id="videoExistsModal" data-keyboard="false" data-backdrop="static">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div>
-					<p class="title">That video is already in the queue.</p>
+					<p class="title">That video is already in the queue</p>
 				</div>
 				<div class="actions">
-					<button class="btn btn-primary" data-dismiss="modal">OK chill</button>
+					<button class="btn btn-primary" data-dismiss="modal">OK</button>
 				</div>
 			</div>
 		</div>
