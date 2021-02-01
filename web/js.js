@@ -30,7 +30,7 @@ function ready() {
 }
 
 function debug() {
-	modals.videoquality.modal("show")
+	// modals.videoquality.modal("show")
 	let response = {
 		title: "LOREM LOREM LOREM LOREM LOREM LOREM LOREM",
 		formats: [{ format_id: 123, format_note: "0 - 720p60" }, {format_id: 114, format: "test"}],
@@ -40,8 +40,8 @@ function debug() {
 	}
 
 	let video = addVideo(123, response)
-	setVideoThumbnail(response)
 	setVideo(video, response)
+	video.find(".image").css("background-image", "url(file:///C:/Users/TheGamerX/Documents/MEGAsync/Files/[%20Images%20]/[%20Wallpapers%20]/[%20Desktop%20]/Abstract-Wave-4K-Wallpaper-3840x2160.jpg)")
 	debugg = {
 		downpercent: 0,
 		url: response.webpage_url
