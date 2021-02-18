@@ -85,9 +85,10 @@ function preaddVideo(videodata) {
 
 	video.find("[name=pause]").hide()
 	video.find("[name=progress]").html("Restored")
-	if (video.done) {
+	if (videodata.done) {
 		video.find("[name=progress]").html("Downloaded")
 		setProgress(video.find(".progress-bar"), 100)
+		video.data("done", true)
 	} else {
 		setTimeout(function() {
 			loadVideo(video)
