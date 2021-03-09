@@ -26,6 +26,7 @@ function ready() {
 		queue: []
 	}
 	$("form").submit(false)
+	console.log("Ready")
 	removeLoader()
 }
 
@@ -159,14 +160,14 @@ function getDataButton() {
 	setProgress("nav", 0)
 	setTimeout(function () {
 		setProgress("nav", 20)
-	}, 0);
+	}, 0)
 	let data = formObject(els.videoUrl)
 	els.videoUrl.find(":input").prop("disabled", true)
 	let url = els.videoUrl.find("[name=protocol]").html() + data.video
 	try {
 		openVideoModal(getVideoData(url))
 	} catch (e) {
-		showErrorDialog("Error parsing", error)
+		showErrorDialog("Error parsing", e)
 	}
 
 	resetNav()
@@ -175,9 +176,9 @@ function getDataButton() {
 
 function getVideoData(url) {
 	try {
-		let response = ahk.getVideoData(url)
+		var response = ahk.getVideoData(url)
 		var parsed = JSON.parse(response)
-	} catch (e) {let response = ahk.getVideoData(url)
+	} catch (e) {
 		let regex = response.match(/\[?error\]?:?\s+(.+)/i)
 		throw regex ? regex[1] : e
 	}
@@ -504,6 +505,7 @@ function fileDialog(action) {
 }
 
 function fileProgress(percent, speed) {
+	modals.file.find("[name=info]").html(percent + "% " + speed)
 	setProgress("fileModal", percent)
 }
 

@@ -16,6 +16,7 @@ FileInstall web/minify/index.html, ~
 #Include gui.ahk
 #Include <debug>
 #Include <fileDownloader>
+#Include <counter>
 #Include <RunCMD>
 #Include <configloader>
 #Include <UnZip>
