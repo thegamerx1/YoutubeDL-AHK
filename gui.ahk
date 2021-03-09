@@ -77,7 +77,6 @@ class MyGui {
 				this.gui.wnd.fileProgress(0)
 				UnZip("bin/ffmpeg-extactme.zip", "ffmpeg.exe", "bin/ffmpeg.exe")
 				this.gui.wnd.fileProgress(90)
-				sleep 200
 				FileDelete bin/ffmpeg-extactme.zip
 				this.gui.wnd.fileProgress(100)
 		}
