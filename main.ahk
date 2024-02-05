@@ -9,7 +9,7 @@ Return
 
 ;@Ahk2Exe-SetMainIcon icon.ico
 ;@Ahk2Exe-UpdateManifest 0, Youtube Downloader
-;@Ahk2Exe-SetVersion 1.5
+;@Ahk2Exe-SetVersion 1.7
 ;@Ahk2Exe-ExeName Youtube-Downloader.exe
 
 FileInstall youtube-dl.conf, ~
