@@ -20,9 +20,12 @@ class MyGui {
 	}
 
 	reloadYTDL() {
-		this.ytdlopts := configFile.data.ytdlpath " --ffmpeg-location """ configFile.data.ffmpegpath """ "
+		this.ytdlopts := configFile.data.ytdlpath " "
+		if (configFile.data.ffmpegpath != "ffmpeg.exe") {
+			this.ytdlopts .= "--ffmpeg-location """ configFile.data.ffmpegpath """ "
+		}
 		conf := getCompiledFile("youtube-dl.conf")
-		splitted := StrSplit(conf, "`n")
+		splitted := SplitLine(conf)
 		for key, value in splitted {
 			this.ytdlopts .= value " "
 		}
@@ -34,15 +37,37 @@ class MyGui {
 			this.gui.wnd.showFileDialog("Download folder", true)
 			return
 		}
-		if !FileExist(configFile.data.ytdlpath) {
-			this.gui.wnd.showFileDialog("Youtube-dl")
-			return
+
+		foundyt := this.tryFindBinary([{name: "yt-dlp.exe", args: "--version"}, {name: "youtube-dl.exe", args: "--version"}])
+		if foundyt {
+			configFile.data.ytdlpath := foundyt.command.name
+		} else {
+			if !FileExist(configFile.data.ytdlpath) {
+				this.gui.wnd.showFileDialog("Youtube-dl")
+				return
+			}
 		}
-		if !FileExist(configFile.data.ffmpegpath) {
-			this.gui.wnd.showFileDialog("Ffmpeg")
-			return
+
+		foundffmpeg := this.tryFindBinary([{name: "ffmpeg.exe", args: "-version"}])
+		if foundffmpeg {
+			configFile.data.ffmpegpath := foundffmpeg.command.name
+		} else {
+			if !FileExist(configFile.data.ffmpegpath) {
+				this.gui.wnd.showFileDialog("Ffmpeg")
+				return
+			}
 		}
+
 		return 1
+	}
+
+	tryFindBinary(commands) {
+		for _, com in commands {
+			value := RunCMD(com.name " " com.args)
+			if value {
+				return {command: com, value: value}
+			}
+		}
 	}
 
 	chooseFile(type) {
@@ -98,7 +123,7 @@ class MyGui {
 
 	getVideoData(url) {
 		this.gui.wnd.setProgress("nav", 95)
-		command := this.ytdlopts "-J " url
+		command := this.ytdlopts " -J " url
 		jsonraw := RunCMD(command)
 		this.gui.wnd.setProgress("nav", 100)
 		return jsonraw
