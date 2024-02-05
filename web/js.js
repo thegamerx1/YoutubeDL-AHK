@@ -8,7 +8,7 @@ function ready() {
 		error: $("#errorModal"),
 		file: $("#fileModal"),
 		videoExists: $("#videoExistsModal"),
-		delete: $("#deleteDialog")
+		delete: $("#deleteDialog"),
 	}
 
 	const modal = modals.videoquality
@@ -23,7 +23,7 @@ function ready() {
 		logs: {},
 		config: {},
 		queueReady: true,
-		queue: []
+		queue: [],
 	}
 	$("form").submit(false)
 	console.log("Ready")
@@ -34,18 +34,26 @@ function debug() {
 	// modals.videoquality.modal("show")
 	let response = {
 		title: "LOREM LOREM LOREM LOREM LOREM LOREM LOREM",
-		formats: [{ format_id: 123, format_note: "0 - 720p60" }, {format_id: 114, format: "test"}],
-		thumbnails: [{"url": "https://i.ytimg.com/vi/nI8Q1bqT8QU/hqdefault.jpg"}],
+		formats: [
+			{ format_id: 123, format_note: "0 - 720p60" },
+			{ format_id: 114, format: "test" },
+		],
+		thumbnails: [{ url: "https://i.ytimg.com/vi/nI8Q1bqT8QU/hqdefault.jpg" }],
 		url: "asdasd",
-		webpage_url: "h3nt41/sdasdad"
+		webpage_url: "h3nt41/sdasdad",
 	}
 
 	let video = addVideo(123, response)
 	setVideo(video, response)
-	video.find(".image").css("background-image", "url(file:///C:/Users/TheGamerX/Documents/MEGAsync/Files/[%20Images%20]/[%20Wallpapers%20]/[%20Desktop%20]/Abstract-Wave-4K-Wallpaper-3840x2160.jpg)")
+	video
+		.find(".image")
+		.css(
+			"background-image",
+			"url(file:///C:/Users/TheGamerX/Documents/MEGAsync/Files/[%20Images%20]/[%20Wallpapers%20]/[%20Desktop%20]/Abstract-Wave-4K-Wallpaper-3840x2160.jpg)"
+		)
 	debugg = {
 		downpercent: 0,
-		url: response.webpage_url
+		url: response.webpage_url,
 	}
 	debuggy()
 }
@@ -59,7 +67,10 @@ function debuggy() {
 		return
 	}
 	log(debugg.url, debugg.downpercent + "%\n")
-	updateProgress(debugg.url, "[download]  " + debugg.downpercent + "% of 123MiB at " + random(9, 12) + "MiB/s ETA 01:48:52")
+	updateProgress(
+		debugg.url,
+		"[download]  " + debugg.downpercent + "% of 123MiB at " + random(9, 12) + "MiB/s ETA 01:48:52"
+	)
 	if (debugg.downpercent == 100) {
 		debugg.nextpercent = 0
 	}
@@ -91,7 +102,7 @@ function preaddVideo(videodata) {
 		setProgress(video.find(".progress-bar"), 100)
 		video.data("done", true)
 	} else {
-		setTimeout(function() {
+		setTimeout(function () {
 			loadVideo(video)
 		}, 65)
 	}
@@ -140,7 +151,7 @@ function setVideo(video, videodata) {
 	video.data("videoname", videodata.title)
 	data.logs[videodata.webpage_url] = ""
 	// img.prop("src", videodata.thumbnail)
-	img.css("background-image", "url("+videodata.thumbnail+")")
+	img.css("background-image", "url(" + videodata.thumbnail + ")")
 }
 
 function formatURL(e) {
@@ -149,7 +160,7 @@ function formatURL(e) {
 		e.value = regex[3]
 		els.videoUrl.find("[name=protocol]").html(regex[1])
 	} else {
-		if (regex = e.value.match(/^([\w-]{6,})$/)) {
+		if ((regex = e.value.match(/^([\w-]{6,})$/))) {
 			e.value = "youtube.com/watch?v=" + regex[1]
 		}
 	}
@@ -167,7 +178,7 @@ function getDataButton() {
 	try {
 		openVideoModal(getVideoData(url))
 	} catch (e) {
-		showErrorDialog("Error parsing", e)
+		showErrorDialog("Error parsing", e.toString())
 	}
 
 	resetNav()
@@ -201,6 +212,9 @@ function openVideoModal(response) {
 		modals.videoExists.modal("show")
 		return
 	}
+
+	console.log("Opening modal")
+
 	let modal = modals.videoquality
 	modal.modal("show")
 	modal.find(".modal-title").html(response.title)
@@ -209,7 +223,9 @@ function openVideoModal(response) {
 	modal.find("input[name=audio]").prop("checked", true)
 	modal.find("input[name=subtitles]").prop("checked", false)
 	modal.find("span[name=views]").html(response.view_count.toLocaleString())
-	modal.find("span[name=time]").html(new Date(response.duration * 1000).toISOString().substr(11, 8))
+	modal
+		.find("span[name=time]")
+		.html(new Date(response.duration * 1000).toISOString().substr(11, 8))
 	modal.find("span[name=uploader]").html(response.uploader)
 	let image = modal.find(".image img")
 	image.prop("src", "")
@@ -223,31 +239,16 @@ function openVideoModal(response) {
 			let option = document.createElement("option")
 			option.value = format.format_note
 			option.isAudio = format.format.includes("audio")
-			option.innerHTML = (option.isAudio ? "Audio" : format.format_note)
+			option.innerHTML = option.isAudio ? "Audio" : format.format_note
 			els.qualitySelect.append(option)
 		}
-		formats[format.format_note].push({ext: format.ext, id:format.format_id, data: format.tbr})
+		formats[format.format_note].push({ ext: format.ext, id: format.format_id, data: format.tbr })
 	})
 	response.new_formats = formats
-	setVideoThumbnail(response)
 	image.prop("src", response.thumbnail)
 	image.parent().removeClass("loader")
 	modal.data("video", response)
 	updateQuality()
-}
-
-function setVideoThumbnail(response) {
-	$(response.thumbnails.reverse()).each(function () {
-		if (this.url.includes(".webp")) return //for ie shit
-		var req = new XMLHttpRequest()
-		req.open("GET", this.url, false)
-		req.send()
-		if (req.status !== 200) return
-		this.url = this.url.replace(/\?sqp=.+/, "") // Remove youtube tracking get param because it breaks IE ufxcking
-		response.thumbnail = this.url
-		return false
-	})
-	console.log(response.thumbnail)
 }
 
 function updateQuality() {
@@ -260,7 +261,7 @@ function updateQuality() {
 	$(modal.data("video").new_formats[qualityNote]).each(function () {
 		let option = document.createElement("option")
 		option.value = this.id
-		option.innerHTML = this.ext + " " + Math.floor(this.data) +"kbps"
+		option.innerHTML = this.ext + " " + Math.floor(this.data) + "kbps"
 		els.formatSelect.append(option)
 	})
 }
@@ -285,15 +286,15 @@ function downloadVideo() {
 	var format = formdata.format
 	video.data("formdata", formdata)
 	video.data("isAudio", qualityOption.isAudio)
-	if (!qualityOption.isAudio && formdata.audio) format += "+bestaudio/"+format
+	if (!qualityOption.isAudio && formdata.audio) format += "+bestaudio/" + format
 	video.data("command", getCommand(formdata, format, currentVideo.webpage_url))
-	data.queue.push({ command: video.data("command"), url: currentVideo.webpage_url})
+	data.queue.push({ command: video.data("command"), url: currentVideo.webpage_url })
 	checkQueue()
 }
 
 function getCommand(form, format, url) {
 	if (!form.isAudio && form.audio) format += "+bestaudio/" + format
-	let command = data.ytdlopts + " -o \"" + data.config.downpath + "/%(title)s.%(ext)s\" -f " + format
+	let command = data.ytdlopts + ' -o "' + data.config.downpath + '/%(title)s.%(ext)s" -f ' + format
 	if (form.subtitles) command += " --embed-subs --all-subs"
 	command += " " + url
 	return command
@@ -310,7 +311,7 @@ function checkQueue(ready) {
 			return
 		}
 		data.queueReady = false
-		setTimeout(function() {
+		setTimeout(function () {
 			ahk.downloadCommand(video.command, video.url)
 			checkQueue(true)
 		}, 0)
@@ -318,10 +319,11 @@ function checkQueue(ready) {
 }
 
 function setProgress(name, value) {
-	let progress = (typeof name == "object") ? $(name) : $(".progress[name="+ name +"] .progress-bar")
+	let progress =
+		typeof name == "object" ? $(name) : $(".progress[name=" + name + "] .progress-bar")
 	if (value == 0) {
 		progress.addClass("notransition")
-		setTimeout(function() {
+		setTimeout(function () {
 			progress.removeClass("notransition")
 		}, 200)
 	}
@@ -341,13 +343,15 @@ function updateProgress(url, message, finished) {
 	let size = ""
 	let speed = ""
 	let msgprogress = ""
-	let match = message.match(/\[download\]\s+([\d\.]+)%\s+of\s+([\~\d\.\w]+)(\s+at\s+([\d\.\w\/]+)\s+ETA\s+([\d:]+))?/i)
+	let match = message.match(
+		/\[download\]\s+([\d\.]+)%\s+of\s+([\~\d\.\w]+)(\s+at\s+([\d\.\w\/]+)\s+ETA\s+([\d:]+))?/i
+	)
 	if (match) {
 		percent = parseInt(match[1])
 		size = match[2]
 		speed = match[4]
 	} else {
-		if (match = message.match(/\[download\]\s+([\d\.\w]+)\s+at\s+([\d\.\w\/]+)/i)) {
+		if ((match = message.match(/\[download\]\s+([\d\.\w]+)\s+at\s+([\d\.\w\/]+)/i))) {
 			percent = 25
 			size = match[1]
 			speed = match[2]
@@ -370,7 +374,9 @@ function updateProgress(url, message, finished) {
 			video.find("[name=pause]").hide()
 			percent = 100
 		} else {
-			let matchy = message.match(/^(\[(?!download)(\w+)\]\s+(.+?))(?:(\s+)?(into|in|to|\:)\s+(\"|\')?\w\:.*)?$/i)
+			let matchy = message.match(
+				/^(\[(?!download)(\w+)\]\s+(.+?))(?:(\s+)?(into|in|to|\:)\s+(\"|\')?\w\:.*)?$/i
+			)
 			if (matchy) msg = matchy[3]
 		}
 	} else {
@@ -390,7 +396,6 @@ function updateProgress(url, message, finished) {
 	if (msgprogress) video.find("[name=progress]").html(msgprogress)
 }
 
-
 function saveVideos() {
 	let data = []
 	els.videolist.find("> .video").each(function () {
@@ -400,7 +405,7 @@ function saveVideos() {
 			url: e.attr("url"),
 			title: e.data("videoname"),
 			qid: e.data("qid"),
-			formdata: e.data("formdata")
+			formdata: e.data("formdata"),
 		})
 	})
 	return JSON.stringify(data)
@@ -437,7 +442,7 @@ function videoAction(e) {
 			e.html(paused ? "Resume" : "Pause")
 			video.find("[name=progress]").html(status ? "Resumed" : "Paused")
 			if (status) {
-				data.queue.push({ command: video.data("command"), url: url})
+				data.queue.push({ command: video.data("command"), url: url })
 				checkQueue()
 			}
 			break
@@ -449,7 +454,7 @@ function videoAction(e) {
 }
 
 function getVideo(url) {
-	return els.videolist.find("> .video[url=\""+ url +"\"]")
+	return els.videolist.find('> .video[url="' + url + '"]')
 }
 
 function setLogs() {
@@ -473,6 +478,7 @@ function log(url, text) {
 
 function showErrorDialog(title, text) {
 	let modal = modals.error
+	console.log(text)
 	modal.modal("show")
 	modal.find(".modal-title").html(title)
 	modal.find(".console code").html(text)
@@ -511,7 +517,7 @@ function fileProgress(percent, speed) {
 
 function checkClose() {
 	let hasUnDoneVideos = false
-	els.videolist.find("> .video").each(function() {
+	els.videolist.find("> .video").each(function () {
 		let e = $(this)
 		if (!e.data("paused") && !e.data("done")) {
 			hasUnDoneVideos = true

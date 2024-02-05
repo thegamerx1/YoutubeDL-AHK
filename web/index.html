@@ -1,268 +1,325 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta charset="UTF-8">
-	<title>Youtube Downloader</title>
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Youtube Downloader</title>
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	</head>
 
-<body>
-	<ahk-nav close minimize></ahk-nav>
-	<div id="loader"></div>
-	<div class="progress nav-progress" name="nav"><div class="progress-bar"></div></div>
+	<body>
+		<ahk-nav close minimize></ahk-nav>
+		<div id="loader"></div>
+		<div class="progress nav-progress" name="nav"><div class="progress-bar"></div></div>
 
-	<main>
-		<div id="buttons">
-			<button class="btn btn-primary" onclick="ahk.openFolder()">Open Folder</button>
-			<button class="btn btn-primary" onclick="openSettingsModal()">Settings</button>
-		</div>
-
-		<form onsubmit="getDataButton()" id="videoUrl">
-			<div class="input-group px-3">
-				<div class="input-group-prepend">
-					<span class="input-group-text" name="protocol">http://</span>
-				</div>
-				<input type="text" maxlength=70 class="form-control" name="video" placeholder="URL or Youtube video id" oninput="formatURL(this)">
-				<div class="input-group-append">
-					<button class="btn btn-secondary">Download</button>
-				</div>
-			</div>
-		</form>
-
-		<div class="container" id="videolist"></div>
-
-		<footer>
-			<a onclick="gui.run(this.href); return false" href="https://github.com/thegamerx1/YoutubeDL-AHK">Github</a>
-		</footer>
-	</main>
-
-	<template name="video">
-		<div class="video bg-dark">
-			<div class="body">
-				<div class="image"></div>
-				<div class="content">
-					<p class="title"></p>
-
-					<p class="text-muted">
-						<span name="format"></span>
-						<span name="size"></span>
-					</p>
-				</div>
+		<main>
+			<div id="buttons">
+				<button class="btn btn-primary" onclick="ahk.openFolder()">Open Folder</button>
+				<button class="btn btn-primary" onclick="openSettingsModal()">Settings</button>
 			</div>
 
-			<div class="footer">
-				<div class="progress">
-					<div class="progress-bar"></div>
-					<span name="progress">Waiting for download</span>
+			<form onsubmit="getDataButton()" id="videoUrl">
+				<div class="input-group px-3">
+					<div class="input-group-prepend">
+						<span class="input-group-text" name="protocol">http://</span>
+					</div>
+					<input
+						type="text"
+						maxlength="70"
+						class="form-control"
+						name="video"
+						placeholder="URL or Youtube video id"
+						oninput="formatURL(this)"
+					/>
+					<div class="input-group-append">
+						<button class="btn btn-secondary">Download</button>
+					</div>
+				</div>
+			</form>
+
+			<div class="container" id="videolist"></div>
+
+			<footer>
+				<a
+					onclick="gui.run(this.href); return false"
+					href="https://github.com/thegamerx1/YoutubeDL-AHK"
+					>Github</a
+				>
+			</footer>
+		</main>
+
+		<template name="video">
+			<div class="video bg-dark">
+				<div class="body">
+					<div class="image"></div>
+					<div class="content">
+						<p class="title"></p>
+
+						<p class="text-muted">
+							<span name="format"></span>
+							<span name="size"></span>
+						</p>
+					</div>
 				</div>
 
-				<div class="buttons">
-					<div class="btn-group">
-						<button class="btn btn-sm" name="logs" onclick="videoAction(this)">Logs</button>
-						<button class="btn btn-sm" name="pause" onclick="videoAction(this)">Pause</button>
-						<button class="btn btn-sm d-none" name="retry" onclick="videoAction(this)">Retry</button>
-						<button class="btn btn-sm" name="remove" onclick="videoAction(this)">Remove</button>
+				<div class="footer">
+					<div class="progress">
+						<div class="progress-bar"></div>
+						<span name="progress">Waiting for download</span>
+					</div>
+
+					<div class="buttons">
+						<div class="btn-group">
+							<button class="btn btn-sm" name="logs" onclick="videoAction(this)">
+								Logs
+							</button>
+							<button class="btn btn-sm" name="pause" onclick="videoAction(this)">
+								Pause
+							</button>
+							<button class="btn btn-sm d-none" name="retry" onclick="videoAction(this)">
+								Retry
+							</button>
+							<button class="btn btn-sm" name="remove" onclick="videoAction(this)">
+								Remove
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</template>
+
+		<!-- MODALS -->
+		<div class="modal fade" id="videoqualitymodal" data-keyboard="false" data-backdrop="static">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<p class="modal-title">video title</p>
+					</div>
+					<div class="modal-body">
+						<div class="info">
+							<div class="image fit-image"><img src="https://i.ytimg.com" /></div>
+							<div class="bot">
+								<span><span name="views">999</span>views</span>
+								<span><span name="time">10:10</span></span>
+								<span><span name="uploader">not you</span></span>
+							</div>
+						</div>
+						<form name="videoDownload">
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<label class="input-group-text">Quality</label>
+								</div>
+								<select class="custom-select" name="quality" onchange="updateQuality()">
+									<option>720p 64fps</option>
+									<option>40p 64fps</option>
+									<option>40p 10fps</option>
+								</select>
+								<select class="custom-select" name="format">
+									<option value="11">mp4</option>
+									<option value="20">webm</option>
+								</select>
+							</div>
+							<div class="form-check">
+								<label class="form-check-label">
+									<input type="checkbox" class="form-check-input" name="subtitles" />
+									Download subtitles
+								</label>
+							</div>
+							<div class="form-check">
+								<label class="form-check-label">
+									<input type="checkbox" class="form-check-input" name="audio" />
+									Download video with audio
+								</label>
+							</div>
+							<input type="hidden" name="isAudio" />
+							<small class="form-text text-muted"
+								>Will be downloaded to <span class="downto">C:/</span>.</small
+							>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">
+							Close
+						</button>
+						<button type="button" class="btn btn-primary" onclick="downloadVideo()">
+							Download
+						</button>
 					</div>
 				</div>
 			</div>
 		</div>
-	</template>
 
-	<!-- MODALS -->
-	<div class="modal fade" id="videoqualitymodal" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<p class="modal-title">video title</p>
-				</div>
-				<div class="modal-body">
-					<div class="info">
-						<div class="image fit-image"><img src="https://i.ytimg.com"></div>
-						<div class="bot">
-							<span><span name="views">999</span>views</span>
-							<span><span name="time">10:10</span></span>
-							<span><span name="uploader">not you</span></span>
-						</div>
+		<div class="modal fade" id="settingsModal" data-keyboard="false" data-backdrop="static">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<p class="modal-title">Settings</p>
 					</div>
-					<form name="videoDownload">
-						<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<label class="input-group-text">Quality</label>
+					<div class="modal-body">
+						<form name="settingsForm">
+							<label>Download folder:</label>
+							<div class="input-group">
+								<input type="text" class="form-control" readonly name="downpath" />
+								<div class="input-group-append" onclick='chooseFile("Download folder")'>
+									<button class="btn btn-secondary input-group-text">Browse</button>
+								</div>
 							</div>
-							<select class="custom-select" name="quality" onchange="updateQuality()">
-								<option>720p 64fps</option>
-								<option>40p 64fps</option>
-								<option>40p 10fps</option>
-							</select>
-							<select class="custom-select" name="format">
-								<option value="11">mp4</option>
-								<option value="20">webm</option>
-							</select>
-						</div>
-						<div class="form-check">
-							<label class="form-check-label">
-								<input type="checkbox" class="form-check-input" name="subtitles">
-								Download subtitles
-							</label>
-						</div>
-						<div class="form-check">
-							<label class="form-check-label">
-								<input type="checkbox" class="form-check-input" name="audio">
-								Download video with audio
-							</label>
-						</div>
-						<input type="hidden" name="isAudio">
-						<small class="form-text text-muted">Will be downloaded to <span class="downto">C:/</span>.</small>
-					</form>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary" onclick="downloadVideo()">Download</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div class="modal fade" id="settingsModal" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<p class="modal-title">Settings</p>
-				</div>
-				<div class="modal-body">
-					<form name="settingsForm">
-						<label>Download folder:</label>
-						<div class="input-group">
-							<input type="text" class="form-control" readonly name="downpath">
-							<div class="input-group-append"
-								onclick='chooseFile("Download folder")'>
-								<button class="btn btn-secondary input-group-text">Browse</button>
+							<label>Youtube-DL:</label>
+							<div class="input-group">
+								<input type="text" class="form-control" readonly name="ytdlpath" />
+								<div class="input-group-append" onclick='chooseFile("Youtube-dl")'>
+									<button class="btn btn-secondary input-group-text">Browse</button>
+								</div>
 							</div>
-						</div>
-						<label>Youtube-DL:</label>
-						<div class="input-group">
-							<input type="text" class="form-control" readonly name="ytdlpath">
-							<div class="input-group-append"
-								onclick='chooseFile("Youtube-dl")'>
-								<button class="btn btn-secondary input-group-text">Browse</button>
+							<label>Ffmpeg:</label>
+							<div class="input-group">
+								<input type="text" class="form-control" readonly name="ffmpegpath" />
+								<div class="input-group-append" onclick='chooseFile("Ffmpeg")'>
+									<button class="btn btn-secondary input-group-text">Browse</button>
+								</div>
 							</div>
-						</div>
-						<label>Ffmpeg:</label>
-						<div class="input-group">
-							<input type="text" class="form-control" readonly name="ffmpegpath">
-							<div class="input-group-append"
-								onclick='chooseFile("Ffmpeg")'>
-								<button class="btn btn-secondary input-group-text">Browse</button>
-							</div>
-						</div>
-					</form>
-				</div>
-				<div class="modal-footer">
-					<button class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button class="btn btn-primary" onclick="settingsSave()">Save</button>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button class="btn btn-primary" onclick="settingsSave()">Save</button>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="modal fade console-modal" id="consoleModal" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<p class="modal-title"></p>
-					<button type="button" class="close" data-dismiss="modal" onclick="setLogs()">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body flex-column">
-					<input class="form-control" name="command" readonly value="command">
-					<p name="url" value="url"></p>
-					<pre class="console"><code>...</code></pre>
+		<div
+			class="modal fade console-modal"
+			id="consoleModal"
+			data-keyboard="false"
+			data-backdrop="static"
+		>
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<p class="modal-title"></p>
+						<button type="button" class="close" data-dismiss="modal" onclick="setLogs()">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body flex-column">
+						<input class="form-control" name="command" readonly value="command" />
+						<p name="url" value="url"></p>
+						<pre class="console"><code>...</code></pre>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="modal fade console-modal" id="errorModal" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<p class="modal-title"></p>
-					<button type="button" class="close" data-dismiss="modal">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<pre class="console"><code></code></pre>
+		<div
+			class="modal fade console-modal"
+			id="errorModal"
+			data-keyboard="false"
+			data-backdrop="static"
+		>
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<p class="modal-title"></p>
+						<button type="button" class="close" data-dismiss="modal">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<pre class="console"><code></code></pre>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="modal fade action-modal" id="confirmClose" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<span class="close" data-dismiss="modal">&times;</span>
-				<div>
-					<p class="title">Exit? Videos are downloading</p>
-				</div>
-				<div class="actions">
-					<button class="btn btn-danger" onclick="gui.exit()">Yes</button>
-					<button class="btn btn-primary" data-dismiss="modal">No</button>
+		<div
+			class="modal fade action-modal"
+			id="confirmClose"
+			data-keyboard="false"
+			data-backdrop="static"
+		>
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<span class="close" data-dismiss="modal">&times;</span>
+					<div>
+						<p class="title">Exit? Videos are downloading</p>
+					</div>
+					<div class="actions">
+						<button class="btn btn-danger" onclick="gui.exit()">Yes</button>
+						<button class="btn btn-primary" data-dismiss="modal">No</button>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="modal fade action-modal" id="fileModal" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div>
-					<p class="title"><span class="file">Youtube-DL</span> not found</p>
-				</div>
-				<div class="actions">
-					<button class="btn btn-primary" onclick="fileDialog('choose')">Choose file</button>
-					<button class="btn btn-secondary" onclick="fileDialog('download')">Download</button>
-				</div>
-				<p name="info" class="mb-0"></p>
-				<div class="progress" name="fileModal">
-					<div class="progress-bar"></div>
+		<div
+			class="modal fade action-modal"
+			id="fileModal"
+			data-keyboard="false"
+			data-backdrop="static"
+		>
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div>
+						<p class="title"><span class="file">Youtube-DL</span> not found</p>
+					</div>
+					<div class="actions">
+						<button class="btn btn-primary" onclick="fileDialog('choose')">
+							Choose file
+						</button>
+						<button class="btn btn-secondary" onclick="fileDialog('download')">
+							Download
+						</button>
+					</div>
+					<p name="info" class="mb-0"></p>
+					<div class="progress" name="fileModal">
+						<div class="progress-bar"></div>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="modal fade action-modal" id="deleteDialog" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div>
-					<p class="title">Are you sure you want to delete <span name="title"></span>?</p>
-				</div>
-				<div class="actions">
-					<button class="btn btn-primary" data-dismiss="modal" onclick="deleteDialog(1)">Remove</button>
-					<button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+		<div
+			class="modal fade action-modal"
+			id="deleteDialog"
+			data-keyboard="false"
+			data-backdrop="static"
+		>
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div>
+						<p class="title">Are you sure you want to delete <span name="title"></span>?</p>
+					</div>
+					<div class="actions">
+						<button class="btn btn-primary" data-dismiss="modal" onclick="deleteDialog(1)">
+							Remove
+						</button>
+						<button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="modal fade action-modal" id="videoExistsModal" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div>
-					<p class="title">That video is already in the queue</p>
-				</div>
-				<div class="actions">
-					<button class="btn btn-primary" data-dismiss="modal">OK</button>
+		<div
+			class="modal fade action-modal"
+			id="videoExistsModal"
+			data-keyboard="false"
+			data-backdrop="static"
+		>
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div>
+						<p class="title">That video is already in the queue</p>
+					</div>
+					<div class="actions">
+						<button class="btn btn-primary" data-dismiss="modal">OK</button>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<script src="file://C:/Users/TheGamerX/Documents/Autohotkey/Lib/EzGui/libs/jquery-3.5.1.min.js"></script>
-	<script src="file://C:/Users/TheGamerX/Documents/Autohotkey/Lib/EzGui/inject.js"></script>
-	<script src="js.js"></script>
-	<link rel="stylesheet" href="minify/css.css">
-</body>
+		<script src="js.js"></script>
+		<!-- inject.js -->
+		<link rel="stylesheet" href="minify/css.css" />
+	</body>
 </html>
