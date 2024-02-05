@@ -1,0 +1,40 @@
+name: Build on Windows
+on: push
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout ahk-libs
+        run: git clone https://github.com/thegamerx1/ahk-libs Lib
+
+      - name: Trust me I hate this
+        run: |-
+          New-Item -Path "$HOME\Documents\Autohotkey" -ItemType Directory -Force
+          New-Item -ItemType Junction -Path "$HOME\Documents\Autohotkey\Lib" -Target "$(pwd)\Lib"
+
+      - run: choco install autohotkey sass
+      - name: Compile HTML
+        run: >
+          & "C:\Program Files\AutoHotkey\AutohotkeyU64.exe" "/ErrorStdOut" "Lib\EzGui\projectCompile.ahk" -sass ".\web\css.sass" ".\web\minify\css.css" -web "web" 2>&1 | Out-Host
+      - name: Compile AHK
+        run: >
+          & "C:\Program Files\AutoHotkey\Compiler\Ahk2Exe.exe" "/ErrorStdOut" "/in" "main.ahk" 2>&1 | Out-Host
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Youtube-Downloader.exe
+          path: Youtube-Downloader.exe
+          if-no-files-found: error
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Youtube-Downloader.exe
